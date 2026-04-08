@@ -86,6 +86,12 @@
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db = firebase.database();
+      
+      // लॉगिन से पहले ही डेटाबेस से सही पासवर्ड लोड करें
+      db.ref('admin/password').on('value', (snapshot) => {
+        if (snapshot.exists()) adminPassword = snapshot.val();
+      });
+
       // जाँच करें कि क्या Keys अभी भी डिफ़ॉल्ट हैं
       if (firebaseConfig.apiKey === "YOUR_API_KEY") {
         alert("⚠️ एडमिन पैनल की API Keys अधूरी हैं!");
@@ -144,11 +150,6 @@
     function listenToData() {
       if (!db) return alert("डेटाबेस से संपर्क नहीं हो पाया। कृपया Firebase Keys चेक करें।");
       
-      // डेटाबेस से पासवर्ड लोड करें
-      db.ref('admin/password').on('value', (snapshot) => {
-        if (snapshot.exists()) adminPassword = snapshot.val();
-      });
-
       db.ref('products').on('value', (snapshot) => {
         const data = snapshot.val();
         currentProducts = data ? Object.keys(data).map(key => ({

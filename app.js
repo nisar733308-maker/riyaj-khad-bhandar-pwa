@@ -134,18 +134,23 @@ document.getElementById('clear-filters-btn').addEventListener('click', () => {
 
 // चेक करें कि क्या ऐप पहले से इंस्टॉल है
 if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-  console.log("App already installed");
+  console.log("App detected as already installed");
   if(installBtn) installBtn.style.display = 'none';
 }
 
 // PWA Install Logic
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isMiBrowser = /MiuiBrowser/i.test(navigator.userAgent);
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   installPrompt = e;
-  installBtn.style.display = 'block';
-  console.log("Install prompt ready");
+  
+  // अगर पहले से इंस्टॉल नहीं है, तभी बटन दिखाएं
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'block';
+    console.log("Install prompt ready and visible");
+  }
 });
 
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
@@ -156,6 +161,16 @@ if (isIOS && !window.navigator.standalone) {
     iosNote.innerHTML = "iPhone पर ऐप इंस्टॉल करने के लिए 📤 शेयर बटन दबाएं और फिर 'Add to Home Screen' चुनें।";
     document.body.prepend(iosNote);
   }, 2000);
+}
+
+// Mi Browser के लिए विशेष संदेश
+if (isMiBrowser && !window.matchMedia('(display-mode: standalone)').matches) {
+  setTimeout(() => {
+    const miNote = document.createElement('div');
+    miNote.style = "background:#e3f2fd; padding:10px; text-align:center; font-size:0.8rem; border-bottom:1px solid #2196f3;";
+    miNote.innerHTML = "Mi Browser पर ऐप इंस्टॉल करने के लिए ≡ मेनू दबाएं और 'Add to Home Screen' चुनें।";
+    document.body.prepend(miNote);
+  }, 3000);
 }
 
 installBtn.addEventListener('click', async () => {

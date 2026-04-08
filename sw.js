@@ -1,4 +1,4 @@
-const CACHE_NAME = 'khad-v14';
+const CACHE_NAME = 'khad-v15';
 const STATIC_CACHE = [
   './',
   './index.html',
@@ -14,15 +14,21 @@ self.addEventListener('install', e => e.waitUntil(
 ));
 
 self.addEventListener('fetch', e => {
-  // HTML फाइलों के लिए: पहले नेटवर्क से चेक करो, अगर इंटरनेट नहीं है तो कैशे दिखाओ
+  // HTML फाइलों के लिए: 'Network First' स्ट्रेटेजी ताकि नया अपडेट तुरंत मिले
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match('./index.html'))
+      fetch(e.request)
+        .then(response => {
+          const resClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // अन्य फाइलों के लिए: कैशे दिखाओ और बैकग्राउंड में अपडेट करो
+  // अन्य फाइलों के लिए: Cache First
   e.respondWith(
     caches.match(e.request).then(cached => {
       return cached || fetch(e.request).then(response => {
