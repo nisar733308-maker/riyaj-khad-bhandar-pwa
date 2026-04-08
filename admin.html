@@ -219,8 +219,8 @@
           </div>
           <div style="margin-bottom: 5px; color: #333; line-height: 1.4;">
             👤 नाम: <strong>${o.name || 'N/A'}</strong><br>
-            📞 मोबाइल: <strong>${o.phone || 'N/A'}</strong><br>
-            📍 पता: <strong>${o.address || 'N/A'}</strong><br>
+            📞 मोबाइल: <strong><a href="tel:${o.phone}" style="color:#1976d2; text-decoration:none;">${o.phone || 'N/A'} (📞 कॉल करें)</a></strong><br>
+            � पता: <strong>${o.address || 'N/A'}</strong><br>
             🆔 आधार: <strong>${o.aadhar || 'N/A'}</strong>
           </div>
           <div style="font-weight: bold; margin-bottom: 5px;">
