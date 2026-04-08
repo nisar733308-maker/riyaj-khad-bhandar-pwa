@@ -104,7 +104,8 @@
   </div>
 
   <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
-    <a href="admin.html" style="color: #666; text-decoration: none; font-size: 0.8rem;">🛠️ एडमिन लॉगिन</a>
+    <a href="admin.html" style="color: #666; text-decoration: none; font-size: 0.8rem;">🛠️ एडमिन लॉगिन</a><br>
+    <span style="color: #999; font-size: 0.7rem; margin-top: 5px; display: block;">वर्जन V 1.7</span>
   </footer>
 
   <!-- Firebase SDK -->
@@ -117,6 +118,14 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').then(reg => {
+        // पेज लोड होते ही तुरंत नया अपडेट चेक करें
+        reg.update();
+
+        // अगर पहले से ही कोई अपडेट डाउनलोड होकर बैठा है (Waiting state)
+        if (reg.waiting) {
+          document.getElementById('update-banner').style.display = 'block';
+        }
+
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           newWorker.addEventListener('statechange', () => {
