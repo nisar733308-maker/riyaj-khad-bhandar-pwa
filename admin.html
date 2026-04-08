@@ -260,7 +260,10 @@
           </div>
           <div style="color: #2e7d32; font-weight: bold;">कुल: ₹${o.total.toLocaleString()}</div>
           <div style="margin-top:10px;">
-            <button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>
+            ${o.status === 'Delivered' ? 
+              `<button class="edit-btn" style="background:#666;" onclick="window.updateOrderStatus('${o.id}', 'New')">↩️ वापस लें (Undo)</button>` : 
+              `<button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>`
+            }
             <button class="delete-btn" onclick="window.deleteOrder('${o.id}')">🗑️ हटाएं</button>
           </div>
         </div>
