@@ -10,12 +10,18 @@
     .qty-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .qty-input { padding: 8px; width: 100px; border: 1px solid #ddd; border-radius: 5px; font-weight: bold; }
     .save-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    .print-btn { background: #1976d2; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; margin-right: 5px; }
     .edit-btn { background: #1976d2; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; margin-right: 5px; }
     .logout-btn { background: #666; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; float: right; }
     .delete-btn { background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
     .add-form { background: #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px dashed #2e7d32; }
     .add-form input, .add-form select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
     .order-status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; }
+    /* सेल्स समरी स्टाइल */
+    .sales-summary { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #2e7d32; display: flex; flex-wrap: wrap; gap: 20px; }
+    .summary-card { flex: 1; min-width: 150px; text-align: center; }
+    .summary-card h4 { color: #666; font-size: 0.9rem; margin-bottom: 5px; }
+    .summary-card p { font-size: 1.4rem; font-weight: bold; color: #2e7d32; }
     /* नोटिफिकेशन स्टाइल */
     .notification-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
     .order-popup { background: #2e7d32; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 280px; animation: slideIn 0.3s ease-out; border-left: 5px solid #ffc107; }
@@ -57,6 +63,11 @@
     <h3>📦 स्टॉक मैनेजमेंट</h3>
     <div id="admin-container"></div>
     <button class="save-btn" onclick="saveStock()">💾 स्टॉक अपडेट करें</button>
+
+    <hr style="margin: 30px 0;">
+    <h3>📈 बिक्री रिपोर्ट (Sales Report)</h3>
+    <div id="sales-summary-container" class="sales-summary"></div>
+    <button class="save-btn" style="background:#1976d2; margin-top:-10px; margin-bottom:20px;" onclick="window.printMonthlyReport()">📄 मासिक रिपोर्ट प्रिंट/PDF डाउनलोड करें</button>
 
     <hr style="margin: 30px 0;">
     <h3>📋 ग्राहकों के ऑर्डर (Online)</h3>
@@ -201,8 +212,41 @@
         
         lastOrderCount = allOrders.length;
         isFirstLoad = false;
+        updateSalesSummary(); // समरी अपडेट करें
         filterOrders(); // सीधे रेंडर करने के बजाय फिल्टर फंक्शन कॉल करें
       });
+    }
+
+    function updateSalesSummary() {
+      const container = document.getElementById('sales-summary-container');
+      const deliveredOrders = allOrders.filter(o => o.status === 'Delivered');
+      
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+
+      const monthlyOrders = deliveredOrders.filter(o => {
+        const parts = o.date.split(',')[0].split('/'); // "D/M/YYYY" फॉर्मेट मानकर
+        return parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
+      });
+
+      const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const monthlyRevenue = monthlyOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+      container.innerHTML = `
+        <div class="summary-card">
+          <h4>कुल बिक्री (All Time)</h4>
+          <p>₹${totalRevenue.toLocaleString()}</p>
+        </div>
+        <div class="summary-card" style="border-left: 1px solid #eee; border-right: 1px solid #eee;">
+          <h4>इस महीने की कमाई</h4>
+          <p>₹${monthlyRevenue.toLocaleString()}</p>
+        </div>
+        <div class="summary-card">
+          <h4>पूरे हुए ऑर्डर (इस माह)</h4>
+          <p>${monthlyOrders.length}</p>
+        </div>
+      `;
     }
 
     window.filterOrders = () => {
@@ -264,6 +308,7 @@
               `<button class="edit-btn" style="background:#666;" onclick="window.updateOrderStatus('${o.id}', 'New')">↩️ वापस लें (Undo)</button>` : 
               `<button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>`
             }
+            <button class="print-btn" onclick="window.printOrder('${o.id}')">🖨️ रसीद</button>
             <button class="delete-btn" onclick="window.deleteOrder('${o.id}')">🗑️ हटाएं</button>
           </div>
         </div>
@@ -364,6 +409,99 @@
         }
       });
       alert('ऑनलाइन स्टॉक अपडेट हो गया!');
+    };
+
+    window.printOrder = (orderId) => {
+      const order = allOrders.find(o => String(o.id) === String(orderId));
+      if (!order) return;
+
+      const printWindow = window.open('', '_blank');
+      let itemsHTML = order.items.map(i => `
+        <tr>
+          <td>${i.name}</td>
+          <td>₹${i.price}</td>
+          <td>${i.qty}</td>
+          <td>₹${(i.price * i.qty).toLocaleString()}</td>
+        </tr>`).join('');
+
+      let invoiceHTML = `
+        <html>
+        <head>
+          <title>ऑर्डर रसीद - ${order.name}</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; padding: 40px; }
+            .header { text-align: center; border-bottom: 2px solid #2e7d32; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background: #f4f4f4; }
+            .total { text-align: right; font-size: 1.5rem; margin-top: 20px; color: #2e7d32; }
+            .customer-info { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>रियाज अहमद खाद भंडार</h1>
+            <p>इलाहवास, बहादुरी बाजार, महाराजगंज | मो: 9936733308</p>
+          </div>
+          <div class="customer-info">
+            <p><strong>ऑर्डर ID:</strong> ${order.id}</p>
+            <p><strong>दिनांक:</strong> ${order.date}</p>
+            <p><strong>नाम:</strong> ${order.name}</p>
+            <p><strong>मोबाइल:</strong> ${order.phone}</p>
+            <p><strong>पता:</strong> ${order.address}</p>
+          </div>
+          <table>
+            <thead><tr><th>उत्पाद</th><th>रेट</th><th>मात्रा</th><th>कुल</th></tr></thead>
+            <tbody>${itemsHTML}</tbody>
+          </table>
+          <div class="total">कुल राशि: ₹${order.total.toLocaleString()}</div>
+        </body></html>`;
+
+      printWindow.document.write(invoiceHTML);
+      printWindow.document.close();
+      printWindow.print();
+    };
+
+    window.printMonthlyReport = () => {
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      const monthName = now.toLocaleString('hi-IN', { month: 'long' });
+
+      const monthlyOrders = allOrders.filter(o => {
+        const parts = o.date.split(',')[0].split('/');
+        return o.status === 'Delivered' && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
+      });
+
+      const totalRevenue = monthlyOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+      const printWindow = window.open('', '_blank');
+      let reportHTML = `
+        <html><head><title>मासिक रिपोर्ट - ${monthName}</title>
+        <style>
+          body { font-family: 'Arial', sans-serif; padding: 30px; }
+          h1 { text-align: center; color: #2e7d32; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+          .summary { margin-top: 30px; font-weight: bold; font-size: 1.2rem; }
+        </style></head>
+        <body>
+          <h1>मासिक बिक्री रिपोर्ट - ${monthName} ${currentYear}</h1>
+          <table>
+            <thead><tr><th>दिनांक</th><th>ग्राहक</th><th>आइटम्स</th><th>कुल राशि</th></tr></thead>
+            <tbody>
+              ${monthlyOrders.map(o => `<tr><td>${o.date.split(',')[0]}</td><td>${o.name}</td><td>${o.items.map(i => i.name).join(', ')}</td><td>₹${o.total.toLocaleString()}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <div class="summary">
+            <p>कुल ऑर्डर्स: ${monthlyOrders.length}</p>
+            <p>कुल कमाई: ₹${totalRevenue.toLocaleString()}</p>
+          </div>
+        </body></html>`;
+
+      printWindow.document.write(reportHTML);
+      printWindow.document.close();
+      printWindow.print();
     };
   </script>
 </body>
