@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./style.css">
   <style>
     .admin-card { display: flex; flex-direction: column; background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .item-select-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #eee; }
     .qty-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .qty-input { padding: 8px; width: 100px; border: 1px solid #ddd; border-radius: 5px; font-weight: bold; }
     .save-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
@@ -55,7 +56,11 @@
       <input type="number" id="new-price" placeholder="कीमत (₹)">
       <input type="text" id="new-desc" placeholder="विवरण">
       <input type="number" id="new-stock" placeholder="स्टॉक मात्रा">
-      <input type="text" id="new-img" placeholder="फोटो लिंक (खाली छोड़ सकते हैं)">
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 0.8rem; display: block; margin-bottom: 5px;">📷 फोटो चुनें (कैमरा या फाइल):</label>
+        <input type="file" id="new-img-file" accept="image/*" onchange="handleImageSelect(this)" style="border:none; padding:0;">
+        <input type="hidden" id="new-img-base64">
+      </div>
       <button class="save-btn" id="submit-btn" onclick="addNewProduct()" style="margin-top:0;">सामान जोड़ें</button>
       <button class="save-btn" id="cancel-btn" onclick="resetForm()" style="margin-top:10px; background:#666; display:none;">रद्द करें (Cancel)</button>
     </div>
@@ -127,6 +132,18 @@
     // एक छोटा और स्पष्ट नोटिफिकेशन साउंड
     const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     let editingProductId = null;
+
+    window.handleImageSelect = (input) => {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // फोटो को छोटा करें ताकि डेटाबेस पर लोड न पड़े
+          document.getElementById('new-img-base64').value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
 
     // लॉगिन होने पर पैनल दिखाने का फंक्शन
     function showAdminPanel() {
@@ -280,39 +297,55 @@
 
     function renderOrders(orders) {
       const container = document.getElementById('orders-container');
-      const orderList = Array.isArray(orders) ? orders : Object.values(orders || {});
-      if (orderList.length === 0) {
+      if (!orders || orders.length === 0) {
         container.innerHTML = '<p>अभी कोई ऑर्डर नहीं आया है।</p>';
         return;
       }
-      container.innerHTML = orderList.reverse().map(o => {
-        const statusColor = o.status === 'Delivered' ? '#2e7d32' : '#fbc02d';
+
+      // मोबाइल नंबर के आधार पर ऑर्डर्स को ग्रुप करें
+      const grouped = {};
+      orders.forEach(o => {
+        if (!grouped[o.phone]) grouped[o.phone] = { details: o, orders: [] };
+        grouped[o.phone].orders.push(o);
+      });
+
+      container.innerHTML = Object.values(grouped).reverse().map(group => {
+        const main = group.details;
         return `
-        <div class="order-item">
-          <div style="display: flex; justify-content: space-between;">
-            <div style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">ID: ${o.id} | ${o.date}</div>
-            <span class="order-status" style="background: ${statusColor}; color: white;">${o.status || 'New'}</span>
+          <div class="order-item" style="border-left-color: #1976d2;">
+            <div style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+              👤 <strong>${main.name}</strong> | 📞 <strong>${main.phone}</strong><br>
+              📍 ${main.address} | 🆔 आधार: ${main.aadhar}
+            </div>
+            ${group.orders.map(o => {
+              const statusColor = o.status === 'Delivered' ? '#2e7d32' : '#fbc02d';
+              return `
+                <div style="background: #fdfdfd; padding: 10px; margin-bottom: 10px; border: 1px solid #eee; border-radius: 5px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span>ID: ${o.id} | ${o.date}</span>
+                    <span style="color: ${statusColor}; font-weight:bold;">${o.status || 'New'}</span>
+                  </div>
+                  <div id="items-${o.id}">
+                    ${o.items.map((i, index) => `
+                      <div class="item-select-row">
+                        <input type="checkbox" checked class="print-check-${o.id}" data-name="${i.name}" data-price="${i.price}" data-qty="${i.qty}">
+                        <span>${i.name} (x${i.qty}) - ₹${(i.price * i.qty).toLocaleString()}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                  <div style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button class="print-btn" onclick="window.printOrder('${o.id}')">🖨️ चुनिंदा प्रिंट</button>
+                    ${o.status === 'Delivered' ? 
+                      `<button class="edit-btn" style="background:#666;" onclick="window.updateOrderStatus('${o.id}', 'New')">↩️ वापस लें</button>` : 
+                      `<button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>`
+                    }
+                    <button class="delete-btn" onclick="window.deleteOrder('${o.id}')">🗑️ हटाएं</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
-          <div style="margin-bottom: 5px; color: #333; line-height: 1.4;">
-            👤 नाम: <strong>${o.name || 'N/A'}</strong><br>
-            📞 मोबाइल: <strong><a href="tel:${o.phone}" style="color:#1976d2; text-decoration:none;">${o.phone || 'N/A'} (📞 कॉल करें)</a></strong><br>
-            � पता: <strong>${o.address || 'N/A'}</strong><br>
-            🆔 आधार: <strong>${o.aadhar || 'N/A'}</strong>
-          </div>
-          <div style="font-weight: bold; margin-bottom: 5px;">
-            ${o.items.map(i => `${i.name} (x${i.qty})`).join(', ')}
-          </div>
-          <div style="color: #2e7d32; font-weight: bold;">कुल: ₹${o.total.toLocaleString()}</div>
-          <div style="margin-top:10px;">
-            ${o.status === 'Delivered' ? 
-              `<button class="edit-btn" style="background:#666;" onclick="window.updateOrderStatus('${o.id}', 'New')">↩️ वापस लें (Undo)</button>` : 
-              `<button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>`
-            }
-            <button class="print-btn" onclick="window.printOrder('${o.id}')">🖨️ रसीद</button>
-            <button class="delete-btn" onclick="window.deleteOrder('${o.id}')">🗑️ हटाएं</button>
-          </div>
-        </div>
-      `;
+        `;
       }).join('');
     }
 
@@ -327,7 +360,7 @@
     window.addNewProduct = () => {
       const name = document.getElementById('new-name').value;
       const price = document.getElementById('new-price').value;
-      const img = document.getElementById('new-img').value || 'https://via.placeholder.com/150';
+      const img = document.getElementById('new-img-base64').value || 'https://via.placeholder.com/150';
       if (!name || !price) return alert('नाम और कीमत भरें!');
 
       const id = editingProductId || ("p_" + Date.now());
@@ -355,7 +388,7 @@
       document.getElementById('new-price').value = product.price;
       document.getElementById('new-desc').value = product.desc || '';
       document.getElementById('new-stock').value = product.stockCount || 0;
-      document.getElementById('new-img').value = product.image || '';
+      document.getElementById('new-img-base64').value = product.image || '';
       
       document.getElementById('form-title').innerText = "📝 सामान सुधारें";
       document.getElementById('submit-btn').innerText = "अपडेट करें (Save Changes)";
@@ -369,7 +402,8 @@
       document.getElementById('new-price').value = '';
       document.getElementById('new-desc').value = '';
       document.getElementById('new-stock').value = '';
-      document.getElementById('new-img').value = '';
+      document.getElementById('new-img-base64').value = '';
+      document.getElementById('new-img-file').value = '';
       document.getElementById('form-title').innerText = "➕ नया सामान जोड़ें";
       document.getElementById('submit-btn').innerText = "सामान जोड़ें";
       document.getElementById('cancel-btn').style.display = "none";
@@ -415,8 +449,20 @@
       const order = allOrders.find(o => String(o.id) === String(orderId));
       if (!order) return;
 
+      // चेकबॉक्स से चुनिंदा आइटम्स लें
+      const checks = document.querySelectorAll(`.print-check-${orderId}:checked`);
+      if (checks.length === 0) return alert('प्रिंट करने के लिए कम से कम एक सामान चुनें!');
+
+      const selectedItems = Array.from(checks).map(c => ({
+        name: c.dataset.name,
+        price: parseFloat(c.dataset.price),
+        qty: parseInt(c.dataset.qty)
+      }));
+
+      const printTotal = selectedItems.reduce((s, i) => s + (i.price * i.qty), 0);
+
       const printWindow = window.open('', '_blank');
-      let itemsHTML = order.items.map(i => `
+      let itemsHTML = selectedItems.map(i => `
         <tr>
           <td>${i.name}</td>
           <td>₹${i.price}</td>

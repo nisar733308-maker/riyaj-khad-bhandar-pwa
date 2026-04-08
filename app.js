@@ -16,6 +16,7 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 var db = firebase.database();
+var auth = firebase.auth();
 
 let currentProducts = [];
 let filteredProducts = [];
@@ -23,6 +24,7 @@ let installPrompt;
 const installBtn = document.getElementById('install-btn');
 const shareBtn = document.getElementById('share-btn');
 
+let currentUser = null; // वर्तमान में लॉग इन उपयोगकर्ता
 // Function to display products
 function displayProducts(items) {
   const container = document.getElementById('products-container');
@@ -181,6 +183,148 @@ installBtn.addEventListener('click', async () => {
   installBtn.style.display = 'none';
 });
 
+// Menu and UI Toggles
+window.toggleMenu = () => {
+  const menu = document.getElementById('side-menu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+};
+
+window.togglePasswordVisibility = (inputId) => {
+  const input = document.getElementById(inputId);
+  const toggleIcon = input.nextElementSibling;
+  if (input.type === 'password') {
+    input.type = 'text';
+    toggleIcon.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    toggleIcon.textContent = '👁️';
+  }
+};
+
+// Firebase Authentication Functions
+function openAuthModal() {
+  document.getElementById('auth-modal').style.display = 'block';
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').style.display = 'none';
+}
+
+async function loginUser() {
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-password').value;
+
+  if (!email || !password) {
+    alert('कृपया ईमेल और पासवर्ड भरें।');
+    return;
+  }
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    alert('✅ सफलतापूर्वक लॉगिन किया गया!');
+    closeAuthModal();
+  } catch (error) {
+    alert('❌ लॉगिन विफल: ' + error.message);
+  }
+}
+
+async function registerUser() {
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-password').value;
+
+  if (!email || !password || password.length < 6) {
+    alert('कृपया वैध ईमेल और कम से कम 6 अंकों का पासवर्ड भरें।');
+    return;
+  }
+
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    alert('✅ सफलतापूर्वक रजिस्टर किया गया! अब आप लॉगिन कर सकते हैं।');
+    closeAuthModal();
+  } catch (error) {
+    alert('❌ रजिस्ट्रेशन विफल: ' + error.message);
+  }
+}
+
+async function resetPassword() {
+  const email = document.getElementById('auth-email').value;
+
+  if (!email) {
+    alert('कृपया पासवर्ड रीसेट करने के लिए ऊपर अपना ईमेल भरें।');
+    return;
+  }
+
+  try {
+    await auth.sendPasswordResetEmail(email);
+    alert('✅ पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है। कृपया अपना इनबॉक्स (और स्पैम फोल्डर) चेक करें।');
+  } catch (error) {
+    alert('❌ एरर: ' + error.message);
+  }
+}
+
+async function logoutUser() {
+  try {
+    await auth.signOut();
+    alert('✅ सफलतापूर्वक लॉगआउट किया गया!');
+  } catch (error) {
+    alert('❌ लॉगआउट विफल: ' + error.message);
+  }
+}
+
+// Firebase Auth State Listener
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    // मेनू अपडेट करें
+    document.getElementById('menu-login').style.display = 'none';
+    document.getElementById('menu-profile').style.display = 'block';
+    document.getElementById('menu-logout').style.display = 'block';
+    
+    console.log("User logged in:", user.uid);
+
+    // यूजर प्रोफाइल डेटा लोड करें
+    db.ref('users/' + user.uid).on('value', (snapshot) => {
+      const userData = snapshot.val();
+      if (userData) {
+        document.getElementById('display-name').textContent = userData.name || '';
+        document.getElementById('display-phone').textContent = userData.phone || '';
+        document.getElementById('display-address').textContent = userData.address || '';
+        document.getElementById('display-aadhar').textContent = userData.aadhar || '';
+        
+        // कार्ट में भी प्री-फिल करें
+        document.getElementById('customer-name').value = userData.name || '';
+        document.getElementById('customer-phone').value = userData.phone || '';
+        document.getElementById('customer-address').value = userData.address || '';
+        document.getElementById('customer-aadhar').value = userData.aadhar || '';
+
+        document.getElementById('logged-in-user-info').style.display = 'block';
+        document.getElementById('customer-input-fields').style.display = 'none';
+        document.getElementById('login-prompt-in-cart').style.display = 'none';
+        document.getElementById('save-details-checkbox').style.display = 'none';
+      } else {
+        // अगर यूजर लॉग इन है लेकिन प्रोफाइल डेटा नहीं है, तो इनपुट फील्ड दिखाएं और सेव करने का विकल्प दें
+        document.getElementById('logged-in-user-info').style.display = 'none';
+        document.getElementById('customer-input-fields').style.display = 'flex';
+        document.getElementById('login-prompt-in-cart').style.display = 'none';
+        document.getElementById('save-details-checkbox').style.display = 'block';
+      }
+    });
+  } else {
+    currentUser = null;
+    // मेनू रिसेट करें
+    document.getElementById('menu-login').style.display = 'block';
+    document.getElementById('menu-profile').style.display = 'none';
+    document.getElementById('menu-logout').style.display = 'none';
+
+    console.log("User logged out");
+    // लॉगआउट होने पर कार्ट में इनपुट फील्ड दिखाएं
+    document.getElementById('logged-in-user-info').style.display = 'none';
+    document.getElementById('customer-input-fields').style.display = 'flex';
+    document.getElementById('login-prompt-in-cart').style.display = 'block';
+    document.getElementById('save-details-checkbox').style.display = 'none';
+  }
+});
+
 // Share App Logic
 if (shareBtn) {
   shareBtn.addEventListener('click', async () => {
@@ -230,8 +374,28 @@ document.addEventListener('DOMContentLoaded', () => {
 window.openCart = () => {
   renderCartItems();
   document.getElementById('cart-modal').style.display = 'block';
+  // कार्ट खुलने पर लॉगिन स्थिति के अनुसार UI अपडेट करें
+  if (currentUser) {
+    document.getElementById('logged-in-user-info').style.display = 'block';
+    document.getElementById('customer-input-fields').style.display = 'none';
+    document.getElementById('login-prompt-in-cart').style.display = 'none';
+    document.getElementById('save-details-checkbox').style.display = 'none';
+  } else {
+    document.getElementById('logged-in-user-info').style.display = 'none';
+    document.getElementById('customer-input-fields').style.display = 'flex';
+    document.getElementById('login-prompt-in-cart').style.display = 'block';
+    document.getElementById('save-details-checkbox').style.display = 'none';
+  }
+};
+
+window.editCustomerDetails = () => {
+  document.getElementById('logged-in-user-info').style.display = 'none';
+  document.getElementById('customer-input-fields').style.display = 'flex';
+  document.getElementById('save-details-checkbox').style.display = 'block'; // सेव करने का विकल्प दें
+  document.getElementById('login-prompt-in-cart').style.display = 'none';
 };
 window.closeCart = () => document.getElementById('cart-modal').style.display = 'none';
 
 window.openProductDetails = openProductDetails;
 window.closeProductModal = closeProductModal;
+window.resetPassword = resetPassword;

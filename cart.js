@@ -95,19 +95,46 @@ function clearCart() {
 document.getElementById('checkout').onclick = () => {
   if (cart.length === 0) return;
 
+  // ग्राहक की जानकारी इनपुट फील्ड से लें
   const customerName = document.getElementById('customer-name').value;
   const customerPhone = document.getElementById('customer-phone').value;
   const customerAddress = document.getElementById('customer-address').value;
   const customerAadhar = document.getElementById('customer-aadhar').value;
 
-  if (!customerName || !customerPhone || !customerAddress || !customerAadhar) {
-    alert('कृपया सभी जानकारी (नाम, फोन, पता और आधार) सही-सही भरें।');
+  const phoneRegex = /^[0-9]{10}$/;
+  const aadharRegex = /^[0-9]{12}$/;
+
+  if (!customerName.trim() || !customerAddress.trim()) {
+    alert('कृपया नाम और पता भरें।');
+    return;
+  }
+  if (!phoneRegex.test(customerPhone)) {
+    alert('❌ मोबाइल नंबर 10 अंकों का होना चाहिए।');
+    return;
+  }
+  if (!aadharRegex.test(customerAadhar)) {
+    alert('❌ आधार कार्ड नंबर 12 अंकों का होना चाहिए।');
     return;
   }
 
   const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
+  // अगर यूजर लॉग इन है और उसने 'सेव करें' चेकबॉक्स पर टिक किया है, तो प्रोफाइल अपडेट करें
+  if (window.currentUser && document.getElementById('save-customer-details').checked) {
+    window.db.ref('users/' + window.currentUser.uid).set({
+      name: customerName,
+      phone: customerPhone,
+      address: customerAddress,
+      aadhar: customerAadhar,
+      email: window.currentUser.email // ईमेल भी सेव करें
+    }).then(() => {
+      console.log("User profile updated successfully!");
+    }).catch(error => {
+      console.error("Error updating user profile:", error);
+    });
+  }
+
   let message = `*नया ऑर्डर - रियाज अहमद खाद भंडार*%0A%0A`;
   message += `*नाम:* ${customerName}%0A`;
   message += `*ग्राहक मोबाइल:* ${customerPhone}%0A`;
@@ -127,6 +154,7 @@ document.getElementById('checkout').onclick = () => {
   firebase.database().ref('orders/' + orderId).set({
     id: orderId,
     date: new Date().toLocaleString('hi-IN'),
+    userId: window.currentUser ? window.currentUser.uid : 'guest', // यूजर ID भी सेव करें
     name: customerName,
     phone: customerPhone,
     address: customerAddress,

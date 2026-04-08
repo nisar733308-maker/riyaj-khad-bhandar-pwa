@@ -15,13 +15,32 @@
   </div>
 
   <header>
-    <h1>🌾 रियाज अहमद खाद भंडार</h1>
+    <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
+    <h1 style="margin-bottom: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
     <p>खाद और कृषि उत्पाद</p>
     <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
       <button id="install-btn" style="display:none; padding:10px 15px; background:white; color:#2e7d32; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📲 इंस्टॉल करें</button>
       <button id="share-btn" style="padding:10px 15px; background:white; color:#1976d2; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📤 ऐप शेयर करें</button>
     </div>
   </header>
+
+  <!-- 3-Dots Side Menu -->
+  <div id="side-menu" class="side-menu">
+    <div class="menu-content">
+      <div class="menu-header">
+        <h3>📋 मेनू</h3>
+        <span onclick="toggleMenu()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
+      </div>
+      <ul class="menu-list">
+        <li id="menu-login" onclick="openAuthModal(); toggleMenu()">👤 लॉगिन / रजिस्टर</li>
+        <li id="menu-profile" onclick="openCart(); toggleMenu()" style="display:none;">👤 मेरी प्रोफाइल</li>
+        <li onclick="location.href='#about-section'; toggleMenu()">ℹ️ स्टोर की जानकारी</li>
+        <li onclick="location.href='admin.html'">🛠️ एडमिन पैनल</li>
+        <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;">👋 लॉगआउट</li>
+      </ul>
+    </div>
+  </div>
+
   <nav>
     <div class="filter-group">
       <input id="search" placeholder="उत्पाद खोजें...">
@@ -73,11 +92,28 @@
         <span class="close" onclick="closeCart()">&times;</span>
       </div>
       <div class="modal-body" id="cart-items"></div>
-      <div style="padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" id="customer-name" placeholder="अपना पूरा नाम डालें" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-        <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-        <input type="text" id="customer-address" placeholder="पूरा पता (गाँव/शहर)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-        <input type="number" id="customer-aadhar" placeholder="आधार कार्ड नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+      <div id="customer-details-section" style="padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div id="logged-in-user-info" style="display:none; background:#e8f5e9; padding:15px; border-radius:8px; border-left:5px solid #2e7d32;">
+          <p><strong>👤 नाम:</strong> <span id="display-name"></span></p>
+          <p><strong>📞 मोबाइल:</strong> <span id="display-phone"></span></p>
+          <p><strong>🏠 पता:</strong> <span id="display-address"></span></p>
+          <p><strong>🆔 आधार:</strong> <span id="display-aadhar"></span></p>
+          <button onclick="editCustomerDetails()" style="background:#1976d2; color:white; border:none; padding:8px 12px; border-radius:5px; margin-top:10px; cursor:pointer; font-size:0.9rem;">विवरण बदलें</button>
+        </div>
+        <div id="customer-input-fields">
+          <input type="text" id="customer-name" placeholder="अपना पूरा नाम" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <input type="text" id="customer-address" placeholder="पूरा पता" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <input type="number" id="customer-aadhar" placeholder="आधार कार्ड नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+        </div>
+        <div id="login-prompt-in-cart" style="text-align:center; margin-top:10px; display:none;">
+          <p style="margin-bottom:10px;">ऑर्डर करने के लिए लॉगिन करें या विवरण भरें:</p>
+          <button class="auth-btn" onclick="openAuthModal()">👤 लॉगिन / रजिस्टर</button>
+        </div>
+        <div id="save-details-checkbox" style="display:none; margin-top:10px;">
+          <input type="checkbox" id="save-customer-details">
+          <label for="save-customer-details">यह जानकारी मेरे प्रोफाइल में सेव करें</label>
+        </div>
       </div>
       <div class="modal-footer">
         <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;">
@@ -103,14 +139,38 @@
     </div>
   </div>
 
+  <!-- Login/Register Modal -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="auth-modal-title">👤 लॉगिन / रजिस्टर</h2>
+        <span class="close" onclick="closeAuthModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="auth-form">
+          <input type="email" id="auth-email" placeholder="ईमेल" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <div class="password-wrapper">
+            <input type="password" id="auth-password" placeholder="पासवर्ड" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+            <span class="password-toggle" onclick="togglePasswordVisibility('auth-password')">👁️</span>
+          </div>
+          <button class="save-btn" style="background:#2e7d32;" onclick="loginUser()">लॉगिन करें</button>
+          <button class="save-btn" style="background:#1976d2; margin-top:10px;" onclick="registerUser()">रजिस्टर करें</button>
+          <p style="text-align:center; margin-top:15px; font-size:0.9rem;">
+            <a href="#" onclick="resetPassword(); return false;" style="color:#1976d2;">पासवर्ड भूल गए?</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
-    <a href="admin.html" style="color: #666; text-decoration: none; font-size: 0.8rem;">🛠️ एडमिन लॉगिन</a><br>
-    <span style="color: #999; font-size: 0.7rem; margin-top: 5px; display: block;">वर्जन V 1.8</span>
+    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.10</span>
   </footer>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
   <script src="./products.js"></script>
   <script src="./cart.js"></script>
