@@ -16,6 +16,12 @@
     .add-form { background: #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px dashed #2e7d32; }
     .add-form input, .add-form select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
     .order-status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; }
+    /* नोटिफिकेशन स्टाइल */
+    .notification-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .order-popup { background: #2e7d32; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 280px; animation: slideIn 0.3s ease-out; border-left: 5px solid #ffc107; }
+    @keyframes slideIn { from { transform: translateX(110%); } to { transform: translateX(0); } }
+    .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    .close-popup { cursor: pointer; font-size: 1.5rem; font-weight: bold; }
     .order-item { border-left: 4px solid #2e7d32; background: #fff; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: 4px; }
     h2, h3 { margin-bottom: 15px; color: #2e7d32; }
   </style>
@@ -29,7 +35,7 @@
   </header>
 
   <div id="admin-auth" style="padding: 20px; text-align: center;">
-    <input type="password" id="admin-pass" placeholder="पासवर्ड डालें (riyaj786)" onkeypress="if(event.key==='Enter') checkAuth()">
+    <input type="password" id="admin-pass" placeholder="पासवर्ड डालें" onkeypress="if(event.key==='Enter') checkAuth()">
     <div style="margin: 10px 0; color: #666; font-size: 0.9rem;">
       <input type="checkbox" id="remember-me"> <label for="remember-me">मुझे याद रखें (Remember Me)</label>
     </div>
@@ -66,6 +72,8 @@
       <button class="save-btn" style="background:#1976d2; margin-top:0;" onclick="updateAdminPassword()">💾 पासवर्ड अपडेट करें</button>
     </div>
   </footer>
+
+  <div id="notification-container" class="notification-container"></div>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -147,6 +155,24 @@
       }
     });
 
+    function showOrderPopup(order) {
+      const container = document.getElementById('notification-container');
+      const popup = document.createElement('div');
+      popup.className = 'order-popup';
+      popup.innerHTML = `
+        <div class="popup-header">
+          <span>🔔 नया ऑर्डर आया है!</span>
+          <span class="close-popup" onclick="this.parentElement.parentElement.remove()">×</span>
+        </div>
+        <div style="font-size: 0.85rem;">
+          <strong>${order.name || 'ग्राहक'}</strong> (${order.phone || ''})<br>
+          कुल राशि: ₹${order.total.toLocaleString()}<br>
+          <small>समय: ${order.date}</small>
+        </div>
+      `;
+      container.appendChild(popup);
+    }
+
     function listenToData() {
       if (!db) return alert("डेटाबेस से संपर्क नहीं हो पाया। कृपया Firebase Keys चेक करें।");
       
@@ -166,6 +192,11 @@
         // अगर यह पहली बार लोड नहीं है और ऑर्डर्स की संख्या बढ़ गई है, तो साउंड बजाएं
         if (!isFirstLoad && allOrders.length > lastOrderCount) {
           orderSound.play().catch(e => console.log("Audio block: कृपया पेज पर कहीं भी क्लिक करें।"));
+          // नए ऑर्डर्स को पॉपअप में दिखाएं
+          const sorted = [...allOrders].sort((a, b) => b.id - a.id);
+          for(let i=0; i < (allOrders.length - lastOrderCount); i++) {
+            showOrderPopup(sorted[i]);
+          }
         }
         
         lastOrderCount = allOrders.length;
