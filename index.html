@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <!-- अपडेट नोटिफिकेशन बार -->
+  <div id="update-banner" style="display:none; background:#ff9800; color:white; text-align:center; padding:12px; position:fixed; top:0; width:100%; z-index:9999; font-weight:bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+    ✨ नया अपडेट उपलब्ध है! 
+    <button onclick="window.location.reload()" style="background:white; color:#ff9800; border:none; padding:5px 15px; border-radius:20px; font-weight:bold; cursor:pointer; margin-left:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">अभी अपडेट करें</button>
+  </div>
+
   <header>
     <h1>🌾 रियाज अहमद खाद भंडार</h1>
     <p>खाद और कृषि उत्पाद</p>
@@ -110,10 +116,23 @@
   <script src="./app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js', {scope: './'})
-        .then(r => console.log('SW OK'))
-        .catch(e => console.log('SW fail', e));
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            // अगर नया सर्विस वर्कर इंस्टॉल हो गया है और पहले से कोई कंट्रोलर मौजूद है (यानी यह अपडेट है)
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              document.getElementById('update-banner').style.display = 'block';
+            }
+          });
+        });
+      }).catch(e => console.log('SW fail', e));
     }
+
+    // जब नया वर्कर एक्टिवेट हो जाए, तो पेज को रीलोड करने का विकल्प दें
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log("New version activated");
+    });
   </script>
 </body>
 </html>
