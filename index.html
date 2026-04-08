@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riyaj Ahmad Khad Bhandar</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header>
+    <h1>🌾 रियाज अहमद खाद भंडार</h1>
+    <p>खाद और कृषि उत्पाद</p>
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+      <button id="install-btn" style="display:none; padding:10px 15px; background:white; color:#2e7d32; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📲 इंस्टॉल करें</button>
+      <button id="share-btn" style="padding:10px 15px; background:white; color:#1976d2; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📤 ऐप शेयर करें</button>
+    </div>
+  </header>
+  <nav>
+    <div class="filter-group">
+      <input id="search" placeholder="उत्पाद खोजें...">
+      <a href="#about-section" style="text-decoration:none; color:#2e7d32; font-weight:bold; font-size:0.9rem; align-self:center; margin:0 10px;">ℹ️ स्टोर जानकारी</a>
+      <select id="category-filter">
+        <option value="all">📁 सभी श्रेणियां</option>
+        <option value="नाइट्रोजन खाद">नाइट्रोजन खाद</option>
+        <option value="फॉस्फेट खाद">फॉस्फेट खाद</option>
+        <option value="पोटाश खाद">पोटाश खाद</option>
+        <option value="उर्वरक">उर्वरक</option>
+        <option value="कीटनाशक">कीटनाशक</option>
+      </select>
+      <select id="rating-filter">
+        <option value="0">⭐ सभी रेटिंग</option>
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐ & ऊपर</option>
+        <option value="3">⭐⭐⭐ & ऊपर</option>
+      </select>
+      <select id="sort-filter">
+        <option value="none">🔄 क्रम बदलें</option>
+        <option value="low-high">💰 कीमत: कम से ज्यादा</option>
+        <option value="high-low">💰 कीमत: ज्यादा से कम</option>
+      </select>
+      <button id="clear-filters-btn">❌ साफ करें</button>
+    </div>
+    <span id="cart-count" onclick="openCart()" style="cursor:pointer;">🛒 0</span>
+  </nav>
+
+  <main id="products-container"></main>
+
+  <!-- About Section -->
+  <section id="about-section" class="about-section">
+    <div class="about-container">
+      <h2>📍 हमारे स्टोर की जानकारी (About Us)</h2>
+      <div class="about-card">
+        <p><strong>👤 प्रोपराइटर:</strong> रियाज अहमद (RIYAJ AHMAD)</p>
+        <p><strong>🏠 पता:</strong> इलाहवास, बहादुरी बाजार, महाराजगंज, उत्तर प्रदेश, भारत</p>
+        <p><strong>📞 मोबाइल:</strong> <a href="tel:9936733308">9936733308</a></p>
+        <p><strong>📧 ईमेल:</strong> <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
+        <a href="https://www.google.com/maps/search/?api=1&query=Riyaj+Ahmad+Khad+Bhandar+Bahaduri+Bazar+Maharajganj" target="_blank" class="maps-btn">📍 दुकान का रास्ता देखें (Google Maps)</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="cart-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🛒 आपकी कार्ट</h2>
+        <span class="close" onclick="closeCart()">&times;</span>
+      </div>
+      <div class="modal-body" id="cart-items"></div>
+      <div style="padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <input type="text" id="customer-name" placeholder="अपना पूरा नाम डालें" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+        <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+        <input type="text" id="customer-address" placeholder="पूरा पता (गाँव/शहर)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+        <input type="number" id="customer-aadhar" placeholder="आधार कार्ड नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+      </div>
+      <div class="modal-footer">
+        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;">
+          <span>कुल राशि:</span>
+          <span id="total">₹0</span>
+        </div>
+        <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
+        <button onclick="closeCart()" style="background:#eee; color:#333; width:100%; padding:12px; border:none; border-radius:8px; margin-top:10px; cursor:pointer; font-weight:bold;">जारी रखें (Continue Shopping)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Details Modal -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-product-name">विवरण</h2>
+        <span class="close" onclick="closeProductModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="product-details-content">
+        <!-- Content via JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
+    <a href="admin.html" style="color: #666; text-decoration: none; font-size: 0.8rem;">🛠️ एडमिन लॉगिन</a>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <script src="./products.js"></script>
+  <script src="./cart.js"></script>
+  <script src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js', {scope: './'})
+        .then(r => console.log('SW OK'))
+        .catch(e => console.log('SW fail', e));
+    }
+  </script>
+</body>
+</html>

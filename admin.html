@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>एडमिन पैनल - स्टॉक मैनेजमेंट</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .admin-card { display: flex; flex-direction: column; background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .qty-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .qty-input { padding: 8px; width: 100px; border: 1px solid #ddd; border-radius: 5px; font-weight: bold; }
+    .save-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    .edit-btn { background: #1976d2; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; margin-right: 5px; }
+    .logout-btn { background: #666; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; float: right; }
+    .delete-btn { background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+    .add-form { background: #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px dashed #2e7d32; }
+    .add-form input, .add-form select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .order-status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; }
+    .order-item { border-left: 4px solid #2e7d32; background: #fff; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: 4px; }
+    h2, h3 { margin-bottom: 15px; color: #2e7d32; }
+  </style>
+</head>
+<body style="padding-bottom: 50px;">
+  <header style="padding: 1rem;">
+    <button class="logout-btn" onclick="window.logout()">🔒 लॉगआउट</button>
+    <h1>🛠️ एडमिन पैनल</h1>
+    <p>स्टॉक मैनेज करें (रियाज अहमद)</p>
+    <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem;">← स्टोर पर वापस जाएं</a>
+  </header>
+
+  <div id="admin-auth" style="padding: 20px; text-align: center;">
+    <input type="password" id="admin-pass" placeholder="पासवर्ड डालें (riyaj786)" onkeypress="if(event.key==='Enter') checkAuth()">
+    <div style="margin: 10px 0; color: #666; font-size: 0.9rem;">
+      <input type="checkbox" id="remember-me"> <label for="remember-me">मुझे याद रखें (Remember Me)</label>
+    </div>
+    <button class="save-btn" onclick="checkAuth()">लॉगिन करें</button>
+  </div>
+
+  <main id="admin-main" style="padding: 20px; display: none;">
+    <div class="add-form">
+      <h3 id="form-title">➕ नया सामान जोड़ें</h3>
+      <input type="text" id="new-name" placeholder="नाम">
+      <input type="number" id="new-price" placeholder="कीमत (₹)">
+      <input type="text" id="new-desc" placeholder="विवरण">
+      <input type="number" id="new-stock" placeholder="स्टॉक मात्रा">
+      <input type="text" id="new-img" placeholder="फोटो लिंक (खाली छोड़ सकते हैं)">
+      <button class="save-btn" id="submit-btn" onclick="addNewProduct()" style="margin-top:0;">सामान जोड़ें</button>
+      <button class="save-btn" id="cancel-btn" onclick="resetForm()" style="margin-top:10px; background:#666; display:none;">रद्द करें (Cancel)</button>
+    </div>
+
+    <h3>📦 स्टॉक मैनेजमेंट</h3>
+    <div id="admin-container"></div>
+    <button class="save-btn" onclick="saveStock()">💾 स्टॉक अपडेट करें</button>
+
+    <hr style="margin: 30px 0;">
+    <h3>📋 ग्राहकों के ऑर्डर (Online)</h3>
+    <input type="text" id="order-search" placeholder="नाम या मोबाइल से ऑर्डर खोजें..." oninput="filterOrders()" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; border-left: 5px solid #2e7d32;">
+    <div id="orders-container"></div>
+  </main>
+
+  <footer id="admin-settings-ui" style="padding: 20px; display: none; background: #eee; margin-top: 20px;">
+    <div class="add-form" style="background: #fff; border: 2px solid #1976d2;">
+      <h3>🔐 एडमिन पासवर्ड बदलें</h3>
+      <input type="password" id="new-admin-pass" placeholder="नया पासवर्ड डालें">
+      <input type="password" id="confirm-admin-pass" placeholder="नया पासवर्ड दोबारा डालें">
+      <button class="save-btn" style="background:#1976d2; margin-top:0;" onclick="updateAdminPassword()">💾 पासवर्ड अपडेट करें</button>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="./products.js"></script>
+  <script>
+    // API डिटेल्स यहाँ भी वही रखें जो app.js में हैं
+    var firebaseConfig = {
+      apiKey: "AIzaSyCixWsFNzK4M0CdtcOp38smXFwJg0ZDSM0",
+      authDomain: "riyaj-khad-store.firebaseapp.com",
+      databaseURL: "https://riyaj-khad-store-default-rtdb.firebaseio.com",
+      projectId: "riyaj-khad-store",
+      storageBucket: "riyaj-khad-store.appspot.com",
+      messagingSenderId: "912749567277",
+      appId: "1:912749567277:web:6aa9a25e2556f9b87c1474"
+    };
+    
+    let db;
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      // जाँच करें कि क्या Keys अभी भी डिफ़ॉल्ट हैं
+      if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+        alert("⚠️ एडमिन पैनल की API Keys अधूरी हैं!");
+      }
+    } catch (e) {
+      console.error("Firebase Init Error:", e);
+    }
+
+    let currentProducts = [];
+    let allOrders = []; // सभी ऑर्डर्स को स्टोर करने के लिए
+    let lastOrderCount = 0;
+    let isFirstLoad = true;
+    let adminPassword = 'riyaj786'; // डिफ़ॉल्ट पासवर्ड
+    // एक छोटा और स्पष्ट नोटिफिकेशन साउंड
+    const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    let editingProductId = null;
+
+    // लॉगिन होने पर पैनल दिखाने का फंक्शन
+    function showAdminPanel() {
+      document.getElementById('admin-auth').style.display = 'none';
+      document.getElementById('admin-main').style.display = 'block';
+      document.getElementById('admin-settings-ui').style.display = 'block';
+      listenToData();
+    }
+
+    window.checkAuth = () => {
+      const pass = document.getElementById('admin-pass').value;
+      const remember = document.getElementById('remember-me').checked;
+      if(pass === adminPassword) {
+        if (remember) {
+          localStorage.setItem('adminLoggedIn', 'true'); // ब्राउज़र बंद करने के बाद भी याद रहेगा
+        } else {
+          sessionStorage.setItem('adminLoggedIn', 'true'); // सिर्फ टैब खुला रहने तक याद रहेगा
+        }
+        showAdminPanel();
+      } else {
+        alert('❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।');
+      }
+    };
+
+    window.logout = () => {
+      sessionStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('adminLoggedIn'); // दोनों जगह से हटाएं
+      location.reload();
+    };
+
+    // पेज लोड होते ही चेक करें कि क्या पहले से लॉगिन है
+    document.addEventListener('DOMContentLoaded', () => {
+      const isLogged = sessionStorage.getItem('adminLoggedIn') === 'true' || 
+                       localStorage.getItem('adminLoggedIn') === 'true';
+      if(isLogged) {
+        showAdminPanel();
+      }
+    });
+
+    function listenToData() {
+      if (!db) return alert("डेटाबेस से संपर्क नहीं हो पाया। कृपया Firebase Keys चेक करें।");
+      
+      // डेटाबेस से पासवर्ड लोड करें
+      db.ref('admin/password').on('value', (snapshot) => {
+        if (snapshot.exists()) adminPassword = snapshot.val();
+      });
+
+      db.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        currentProducts = data ? Object.keys(data).map(key => ({
+          ...data[key],
+          id: String(data[key].id || key)
+        })) : [];
+        renderAdmin();
+      });
+      
+      db.ref('orders').on('value', (snapshot) => {
+        const data = snapshot.val();
+        allOrders = data ? Object.values(data) : [];
+        
+        // अगर यह पहली बार लोड नहीं है और ऑर्डर्स की संख्या बढ़ गई है, तो साउंड बजाएं
+        if (!isFirstLoad && allOrders.length > lastOrderCount) {
+          orderSound.play().catch(e => console.log("Audio block: कृपया पेज पर कहीं भी क्लिक करें।"));
+        }
+        
+        lastOrderCount = allOrders.length;
+        isFirstLoad = false;
+        filterOrders(); // सीधे रेंडर करने के बजाय फिल्टर फंक्शन कॉल करें
+      });
+    }
+
+    window.filterOrders = () => {
+      const term = document.getElementById('order-search').value.toLowerCase();
+      const filtered = allOrders.filter(o => 
+        (o.name && String(o.name).toLowerCase().includes(term)) || 
+        (o.phone && String(o.phone).includes(term))
+      );
+      renderOrders(filtered);
+    };
+
+    function renderAdmin() {
+      const container = document.getElementById('admin-container');
+      container.innerHTML = currentProducts.map(item => `
+        <div class="admin-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>${item.name} (₹${item.price})</strong>
+            <div>
+              <button class="edit-btn" onclick="window.editProduct('${item.id}')">📝 सुधारें</button>
+              <button class="delete-btn" onclick="window.deleteProduct('${item.id}')">🗑️ हटाएं</button>
+            </div>
+          </div>
+          <div class="qty-controls">
+            <span>स्टॉक मात्रा:</span>
+            <input type="number" class="qty-input" id="stock-${item.id}" value="${item.stockCount}">
+            <span>बोरी</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderOrders(orders) {
+      const container = document.getElementById('orders-container');
+      const orderList = Array.isArray(orders) ? orders : Object.values(orders || {});
+      if (orderList.length === 0) {
+        container.innerHTML = '<p>अभी कोई ऑर्डर नहीं आया है।</p>';
+        return;
+      }
+      container.innerHTML = orderList.reverse().map(o => {
+        const statusColor = o.status === 'Delivered' ? '#2e7d32' : '#fbc02d';
+        return `
+        <div class="order-item">
+          <div style="display: flex; justify-content: space-between;">
+            <div style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">ID: ${o.id} | ${o.date}</div>
+            <span class="order-status" style="background: ${statusColor}; color: white;">${o.status || 'New'}</span>
+          </div>
+          <div style="margin-bottom: 5px; color: #333; line-height: 1.4;">
+            👤 नाम: <strong>${o.name || 'N/A'}</strong><br>
+            📞 मोबाइल: <strong>${o.phone || 'N/A'}</strong><br>
+            📍 पता: <strong>${o.address || 'N/A'}</strong><br>
+            🆔 आधार: <strong>${o.aadhar || 'N/A'}</strong>
+          </div>
+          <div style="font-weight: bold; margin-bottom: 5px;">
+            ${o.items.map(i => `${i.name} (x${i.qty})`).join(', ')}
+          </div>
+          <div style="color: #2e7d32; font-weight: bold;">कुल: ₹${o.total.toLocaleString()}</div>
+          <div style="margin-top:10px;">
+            <button class="edit-btn" onclick="window.updateOrderStatus('${o.id}', 'Delivered')">✅ पूरा हुआ</button>
+            <button class="delete-btn" onclick="window.deleteOrder('${o.id}')">🗑️ हटाएं</button>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    window.updateOrderStatus = (id, status) => {
+      db.ref('orders/' + id).update({ status: status });
+    };
+
+    window.deleteOrder = (id) => {
+      if(confirm('ऑर्डर डिलीट करें?')) db.ref('orders/' + id).remove();
+    };
+
+    window.addNewProduct = () => {
+      const name = document.getElementById('new-name').value;
+      const price = document.getElementById('new-price').value;
+      const img = document.getElementById('new-img').value || 'https://via.placeholder.com/150';
+      if (!name || !price) return alert('नाम और कीमत भरें!');
+
+      const id = editingProductId || ("p_" + Date.now());
+      const product = {
+        id,
+        name,
+        price: parseFloat(price),
+        desc: document.getElementById('new-desc').value,
+        image: img,
+        stockCount: parseInt(document.getElementById('new-stock').value) || 0,
+        stockStatus: 'In Stock',
+        category: 'खाद'
+      };
+      db.ref('products/' + id).set(product);
+      alert(editingProductId ? 'सामान अपडेट हो गया!' : 'सामान जोड़ दिया गया!');
+      resetForm();
+    };
+
+    window.editProduct = (id) => {
+      const product = currentProducts.find(p => p.id === id);
+      if (!product) return;
+
+      editingProductId = id;
+      document.getElementById('new-name').value = product.name;
+      document.getElementById('new-price').value = product.price;
+      document.getElementById('new-desc').value = product.desc || '';
+      document.getElementById('new-stock').value = product.stockCount || 0;
+      document.getElementById('new-img').value = product.image || '';
+      
+      document.getElementById('form-title').innerText = "📝 सामान सुधारें";
+      document.getElementById('submit-btn').innerText = "अपडेट करें (Save Changes)";
+      document.getElementById('cancel-btn').style.display = "block";
+      window.scrollTo(0, 0);
+    };
+
+    window.resetForm = () => {
+      editingProductId = null;
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-price').value = '';
+      document.getElementById('new-desc').value = '';
+      document.getElementById('new-stock').value = '';
+      document.getElementById('new-img').value = '';
+      document.getElementById('form-title').innerText = "➕ नया सामान जोड़ें";
+      document.getElementById('submit-btn').innerText = "सामान जोड़ें";
+      document.getElementById('cancel-btn').style.display = "none";
+    };
+
+    window.deleteProduct = (id) => {
+      if(confirm('हटाना चाहते हैं?')) {
+        db.ref('products/' + id).remove();
+      }
+    };
+
+    window.updateAdminPassword = () => {
+      const newPass = document.getElementById('new-admin-pass').value;
+      const confirmPass = document.getElementById('confirm-admin-pass').value;
+
+      if (!newPass || newPass.length < 4) {
+        return alert('❌ पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।');
+      }
+      if (newPass !== confirmPass) {
+        return alert('❌ दोनों पासवर्ड मैच नहीं कर रहे हैं।');
+      }
+
+      db.ref('admin/password').set(newPass)
+        .then(() => alert('✅ पासवर्ड सफलतापूर्वक बदल गया है! अगले लॉगिन से यह काम करेगा।'))
+        .catch(err => alert('❌ एरर: ' + err.message));
+    };
+
+    window.saveStock = () => {
+      currentProducts.forEach(p => {
+        const input = document.getElementById(`stock-${p.id}`);
+        if(input) {
+          const newCount = parseInt(input.value) || 0;
+          db.ref('products/' + p.id).update({
+            stockCount: newCount,
+            stockStatus: newCount < 10 ? 'Limited' : 'In Stock'
+          });
+        }
+      });
+      alert('ऑनलाइन स्टॉक अपडेट हो गया!');
+    };
+  </script>
+</body>
+</html>

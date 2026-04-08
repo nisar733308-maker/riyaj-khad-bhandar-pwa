@@ -1,0 +1,196 @@
+// Cart logic with localStorage
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function addToCart(productId, quantity = 1) {
+  // currentProducts (Firebase वाला डेटा) से सामान ढूंढें
+  const source = (typeof currentProducts !== 'undefined' && currentProducts.length > 0) ? currentProducts : products;
+  const product = source.find(p => String(p.id) === String(productId));
+  
+  const existingItem = cart.find(item => item.id === productId);
+  
+  if (existingItem) {
+    existingItem.quantity += quantity;
+  } else {
+    cart.push({...product, quantity: quantity});
+  }
+  
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  
+  // Simple feedback
+  if (window.event && window.event.target && window.event.target.tagName === 'BUTTON') {
+    const btn = window.event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '✅ जोड़ा गया!';
+    setTimeout(() => { btn.textContent = originalText; }, 1500);
+  }
+}
+
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  document.getElementById('cart-count').textContent = `🛒 ${count}`;
+}
+
+function renderCartItems() {
+  const container = document.getElementById('cart-items');
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  if (cart.length === 0) {
+    container.innerHTML = '<p>कार्ट खाली है</p>';
+    document.getElementById('total').textContent = '₹0';
+    return;
+  }
+  
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
+      <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+      <div style="flex: 1;">
+        <div style="font-weight: bold;">${item.name}</div>
+        <div style="color: #666;">₹${item.price}</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button onclick="changeQuantity(${item.id}, -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">-</button>
+        <span style="min-width: 20px; text-align: center;">${item.quantity}</span>
+        <button onclick="changeQuantity(${item.id}, 1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
+      </div>
+      <div style="font-weight: bold; min-width: 80px; text-align: right;">
+        ₹${(item.price * item.quantity).toLocaleString()}
+      </div>
+      <button onclick="removeFromCart(${item.id})" style="background: #f44336; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">हटाएं</button>
+    </div>
+  `).join('');
+  
+  document.getElementById('total').textContent = `₹${total.toLocaleString()}`;
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(item => item.id !== id);
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  renderCartItems();
+}
+
+function changeQuantity(id, delta) {
+  const item = cart.find(item => item.id === id);
+  if (item) {
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+      removeFromCart(id);
+    } else {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+      renderCartItems();
+    }
+  }
+}
+
+function clearCart() {
+  cart = [];
+  localStorage.removeItem('cart');
+  updateCartCount();
+  renderCartItems();
+  closeCart();
+}
+
+document.getElementById('checkout').onclick = () => {
+  if (cart.length === 0) return;
+
+  const customerName = document.getElementById('customer-name').value;
+  const customerPhone = document.getElementById('customer-phone').value;
+  const customerAddress = document.getElementById('customer-address').value;
+  const customerAadhar = document.getElementById('customer-aadhar').value;
+
+  if (!customerName || !customerPhone || !customerAddress || !customerAadhar) {
+    alert('कृपया सभी जानकारी (नाम, फोन, पता और आधार) सही-सही भरें।');
+    return;
+  }
+
+  const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  let message = `*नया ऑर्डर - रियाज अहमद खाद भंडार*%0A%0A`;
+  message += `*नाम:* ${customerName}%0A`;
+  message += `*ग्राहक मोबाइल:* ${customerPhone}%0A`;
+  message += `*पता:* ${customerAddress}%0A`;
+  message += `*आधार:* ${customerAadhar}%0A%0A`;
+  
+  cart.forEach(item => {
+    message += `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}%0A`;
+  });
+  message += `%0A*कुल राशि: ₹${total.toLocaleString()}*`;
+
+  const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+  window.open(whatsappUrl, '_blank');
+
+  // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
+  const orderId = Date.now();
+  firebase.database().ref('orders/' + orderId).set({
+    id: orderId,
+    date: new Date().toLocaleString('hi-IN'),
+    name: customerName,
+    phone: customerPhone,
+    address: customerAddress,
+    aadhar: customerAadhar,
+    items: cart.map(i => ({ name: i.name, qty: i.quantity, price: i.price })),
+    total: total,
+    status: 'New'
+  });
+
+  // ऑर्डर भेजने के बाद कार्ट खाली करें
+  cart = [];
+  localStorage.removeItem('cart');
+  updateCartCount();
+  closeCart();
+};
+
+function printInvoice() {
+  if (cart.length === 0) return;
+  
+  const printWindow = window.open('', '_blank');
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const date = new Date().toLocaleDateString('hi-IN');
+
+  let invoiceHTML = `
+    <html>
+    <head>
+      <title>रसीद - रियाज अहमद खाद भंडार</title>
+      <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; line-height: 1.6; }
+        .header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total { text-align: right; font-size: 1.5rem; font-weight: bold; color: #2e7d32; }
+        .footer { text-align: center; margin-top: 50px; font-size: 0.9rem; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>रियाज अहमद खाद भंडार</h1>
+        <p>प्रो. रियाज अहमद | मोबाइल: 9936733308</p>
+        <p>दिनांक: ${date}</p>
+      </div>
+      <table>
+        <thead><tr><th>उत्पाद</th><th>दर</th><th>मात्रा</th><th>कुल</th></tr></thead>
+        <tbody>
+          ${cart.map(item => `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.quantity}</td><td>₹${(item.price * item.quantity).toLocaleString()}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="total">कुल राशि: ₹${total.toLocaleString()}</div>
+      <div class="footer"><p>हमारे यहाँ आने के लिए धन्यवाद! हम आपके उज्ज्वल भविष्य की कामना करते हैं।</p></div>
+    </body></html>`;
+
+  printWindow.document.write(invoiceHTML);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('clear-cart').onclick = clearCart;
+  document.getElementById('print-cart').onclick = printInvoice;
+  updateCartCount();
+});
+
+// Global functions for onclick
+window.removeFromCart = removeFromCart;
+window.changeQuantity = changeQuantity;
