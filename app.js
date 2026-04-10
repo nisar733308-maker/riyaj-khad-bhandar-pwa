@@ -336,7 +336,7 @@ async function logoutUser() {
 auth.onAuthStateChanged(async (user) => {
   if (user) {
     currentUser = user;
-    // मेनू अपडेट करें
+    // लॉगिन होने पर मेनू में 'मेरी प्रोफाइल' और 'लॉगआउट' दिखाएं
     document.getElementById('menu-login').style.display = 'none';
     document.getElementById('menu-profile').style.display = 'block';
     document.getElementById('menu-orders').style.display = 'block';

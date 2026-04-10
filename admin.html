@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="hi">02.......
-  ead>
+<html lang="hi">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>एडमिन पैनल - स्टॉक मैनेजमेंट</title>
@@ -42,11 +42,12 @@
   </header>
 
   <div id="admin-auth" style="padding: 20px; text-align: center;">
-    <input type="password" id="admin-pass" placeholder="पासवर्ड डालें" onkeypress="if(event.key==='Enter') checkAuth()">
+    <input type="email" id="admin-email" placeholder="एडमिन ईमेल" style="width: 100%; max-width: 300px; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;"><br>
+    <input type="password" id="admin-pass" placeholder="पासवर्ड डालें" onkeypress="if(event.key==='Enter') checkAuth()" style="width: 100%; max-width: 300px; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;"><br>
     <div style="margin: 10px 0; color: #666; font-size: 0.9rem;">
       <input type="checkbox" id="remember-me"> <label for="remember-me">मुझे याद रखें (Remember Me)</label>
     </div>
-    <button class="save-btn" onclick="checkAuth()">लॉगिन करें</button>
+    <button class="save-btn" onclick="checkAuth()" style="max-width: 300px;">लॉगिन करें</button>
   </div>
 
   <main id="admin-main" style="padding: 20px; display: none;">
@@ -93,6 +94,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="./products.js"></script>
   <script>
     // API डिटेल्स यहाँ भी वही रखें जो app.js में हैं
@@ -106,15 +108,13 @@
       appId: "1:912749567277:web:6aa9a25e2556f9b87c1474"
     };
     
-    let db;
+    let db, auth;
+    const allowedAdminEmail = "nisar733308@gmail.com"; // यहाँ आपका एडमिन ईमेल
+
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db = firebase.database();
-      
-      // लॉगिन से पहले ही डेटाबेस से सही पासवर्ड लोड करें
-      db.ref('admin/password').on('value', (snapshot) => {
-        if (snapshot.exists()) adminPassword = snapshot.val();
-      });
+      auth = firebase.auth();
     } catch (e) {
       console.error("Firebase Init Error:", e);
     }
@@ -123,22 +123,9 @@
     let allOrders = []; // सभी ऑर्डर्स को स्टोर करने के लिए
     let lastOrderCount = 0;
     let isFirstLoad = true;
-    let adminPassword = 'riyaj786'; // डिफ़ॉल्ट पासवर्ड
     // एक छोटा और स्पष्ट नोटिफिकेशन साउंड
     const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     let editingProductId = null;
-
-    window.handleImageSelect = (input) => {
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          // फोटो को छोटा करें ताकि डेटाबेस पर लोड न पड़े
-          document.getElementById('new-img-base64').value = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    };
 
     // लॉगिन होने पर पैनल दिखाने का फंक्शन
     function showAdminPanel() {
@@ -149,32 +136,31 @@
     }
 
     window.checkAuth = () => {
+      const email = document.getElementById('admin-email').value;
       const pass = document.getElementById('admin-pass').value;
-      const remember = document.getElementById('remember-me').checked;
-      if(pass === adminPassword) {
-        if (remember) {
-          localStorage.setItem('adminLoggedIn', 'true'); // ब्राउज़र बंद करने के बाद भी याद रहेगा
-        } else {
-          sessionStorage.setItem('adminLoggedIn', 'true'); // सिर्फ टैब खुला रहने तक याद रहेगा
-        }
-        showAdminPanel();
-      } else {
-        alert('❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।');
-      }
+      
+      if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड दोनों भरें।");
+
+      auth.signInWithEmailAndPassword(email, pass).catch(error => {
+        alert("❌ लॉगिन विफल: " + error.message);
+      });
     };
 
     window.logout = () => {
-      sessionStorage.removeItem('adminLoggedIn');
-      localStorage.removeItem('adminLoggedIn'); // दोनों जगह से हटाएं
-      location.reload();
+      auth.signOut().then(() => location.reload());
     };
 
-    // पेज लोड होते ही चेक करें कि क्या पहले से लॉगिन है
-    document.addEventListener('DOMContentLoaded', () => {
-      const isLogged = sessionStorage.getItem('adminLoggedIn') === 'true' || 
-                       localStorage.getItem('adminLoggedIn') === 'true';
-      if(isLogged) {
+    // Firebase Auth State Listener
+    auth.onAuthStateChanged(user => {
+      if (user && user.email === allowedAdminEmail) {
         showAdminPanel();
+      } else if (user) {
+        alert("⛔ अनधिकृत एक्सेस! केवल एडमिन ही लॉगिन कर सकता है।");
+        auth.signOut();
+      } else {
+        document.getElementById('admin-auth').style.display = 'block';
+        document.getElementById('admin-main').style.display = 'none';
+        document.getElementById('admin-settings-ui').style.display = 'none';
       }
     });
 
@@ -413,20 +399,15 @@
       }
     };
 
-    window.updateAdminPassword = () => {
-      const newPass = document.getElementById('new-admin-pass').value;
-      const confirmPass = document.getElementById('confirm-admin-pass').value;
-
-      if (!newPass || newPass.length < 4) {
-        return alert('❌ पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।');
+    window.handleImageSelect = (input) => {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('new-img-base64').value = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
-      if (newPass !== confirmPass) {
-        return alert('❌ दोनों पासवर्ड मैच नहीं कर रहे हैं।');
-      }
-
-      db.ref('admin/password').set(newPass)
-        .then(() => alert('✅ पासवर्ड सफलतापूर्वक बदल गया है! अगले लॉगिन से यह काम करेगा।'))
-        .catch(err => alert('❌ एरर: ' + err.message));
     };
 
     window.saveStock = () => {
@@ -584,6 +565,36 @@
             .total { text-align: right; font-size: 1.5rem; margin-top: 20px; color: #2e7d32; }
             .customer-info { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
           </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>रियाज अहमद खाद भंडार</h1>
+            <p><strong>ग्राहकी खाता सारांश (Consolidated Bill)</strong></p>
+            <p>इलाहवास, बहादुरी बाजार, महाराजगंज | मो: 9936733308</p>
+          </div>
+          <div class="customer-info">
+            <p><strong>नाम:</strong> ${main.name} | <strong>मोबाइल:</strong> ${main.phone}</p>
+            <p><strong>पता:</strong> ${main.address}</p>
+            <p><strong>कुल ऑर्डर्स की संख्या:</strong> ${customerOrders.length}</p>
+          </div>
+          <table>
+            <thead><tr><th>उत्पाद</th><th>दर</th><th>मात्रा</th><th>कुल</th></tr></thead>
+            <tbody>${itemsHTML}</tbody>
+          </table>
+          <div class="total">कुल देय राशि: ₹${totalAmount.toLocaleString()}</div>
+        </body></html>`;
+
+      printWindow.document.write(invoiceHTML);
+      printWindow.document.close();
+      printWindow.print();
+    };
+  </script>
+</body>
+</html>rintWindow.print();
+    };
+  </script>
+</body>
+</html>   </style>
         </head>
         <body>
           <div class="header">
