@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="hi">
-<head>
+<html lang="hi">02.......
+  ead>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>एडमिन पैनल - स्टॉक मैनेजमेंट</title>
@@ -115,11 +115,6 @@
       db.ref('admin/password').on('value', (snapshot) => {
         if (snapshot.exists()) adminPassword = snapshot.val();
       });
-
-      // जाँच करें कि क्या Keys अभी भी डिफ़ॉल्ट हैं
-      if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-        alert("⚠️ एडमिन पैनल की API Keys अधूरी हैं!");
-      }
     } catch (e) {
       console.error("Firebase Init Error:", e);
     }
@@ -314,7 +309,10 @@
         return `
           <div class="order-item" style="border-left-color: #1976d2;">
             <div style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-              👤 <strong>${main.name}</strong> | 📞 <strong>${main.phone}</strong><br>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>👤 <strong>${main.name}</strong> | 📞 <strong>${main.phone}</strong></div>
+                <button class="print-btn" onclick="window.printAllCustomerOrders('${main.phone}')" style="background: #2e7d32;">🖨️ ग्राहक की सभी रसीदें</button>
+              </div>
               📍 ${main.address} | 🆔 आधार: ${main.aadhar}
             </div>
             ${group.orders.map(o => {
@@ -546,6 +544,66 @@
         </body></html>`;
 
       printWindow.document.write(reportHTML);
+      printWindow.document.close();
+      printWindow.print();
+    };
+
+    window.printAllCustomerOrders = (phone) => {
+      const customerOrders = allOrders.filter(o => String(o.phone) === String(phone));
+      if (customerOrders.length === 0) return;
+
+      const main = customerOrders[0];
+      const printWindow = window.open('', '_blank');
+      
+      // सभी ऑर्डर्स के आइटम्स को इकट्ठा करें
+      let allItems = [];
+      customerOrders.forEach(o => {
+          allItems = allItems.concat(o.items);
+      });
+
+      const totalAmount = allItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+      let itemsHTML = allItems.map(i => `
+        <tr>
+          <td>${i.name}</td>
+          <td>₹${i.price}</td>
+          <td>${i.qty}</td>
+          <td>₹${(i.price * i.qty).toLocaleString()}</td>
+        </tr>`).join('');
+
+      let invoiceHTML = `
+        <html>
+        <head>
+          <title>खाता रसीद - ${main.name}</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; padding: 40px; }
+            .header { text-align: center; border-bottom: 2px solid #2e7d32; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background: #f4f4f4; }
+            .total { text-align: right; font-size: 1.5rem; margin-top: 20px; color: #2e7d32; }
+            .customer-info { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>रियाज अहमद खाद भंडार</h1>
+            <p><strong>ग्राहकी खाता सारांश (Consolidated Bill)</strong></p>
+            <p>इलाहवास, बहादुरी बाजार, महाराजगंज | मो: 9936733308</p>
+          </div>
+          <div class="customer-info">
+            <p><strong>नाम:</strong> ${main.name} | <strong>मोबाइल:</strong> ${main.phone}</p>
+            <p><strong>पता:</strong> ${main.address}</p>
+            <p><strong>कुल ऑर्डर्स की संख्या:</strong> ${customerOrders.length}</p>
+          </div>
+          <table>
+            <thead><tr><th>उत्पाद</th><th>दर</th><th>मात्रा</th><th>कुल</th></tr></thead>
+            <tbody>${itemsHTML}</tbody>
+          </table>
+          <div class="total">कुल देय राशि: ₹${totalAmount.toLocaleString()}</div>
+        </body></html>`;
+
+      printWindow.document.write(invoiceHTML);
       printWindow.document.close();
       printWindow.print();
     };

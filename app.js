@@ -201,6 +201,67 @@ window.togglePasswordVisibility = (inputId) => {
   }
 };
 
+// Dark Mode Logic
+window.toggleDarkMode = () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  updateDarkModeUI(isDark);
+};
+
+function updateDarkModeUI(isDark) {
+  const toggleBtn = document.getElementById('dark-mode-toggle');
+  if (toggleBtn) {
+    toggleBtn.innerHTML = isDark ? '☀️ लाइट मोड चालू करें' : '🌙 डार्क मोड चालू करें';
+  }
+}
+
+// Initialize Theme on Load
+if (localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark-mode');
+  updateDarkModeUI(true);
+}
+
+// My Orders Logic
+window.openMyOrders = () => {
+  if (!currentUser) return;
+  
+  const container = document.getElementById('my-orders-list');
+  container.innerHTML = '<p style="text-align:center;">लोड हो रहा है...</p>';
+  document.getElementById('orders-modal').style.display = 'block';
+
+  db.ref('orders').once('value', (snapshot) => {
+    const data = snapshot.val();
+    const allOrders = data ? Object.values(data) : [];
+    // सिर्फ वर्तमान यूजर के ऑर्डर फिल्टर करें
+    const myOrders = allOrders.filter(o => o.userId === currentUser.uid).reverse();
+
+    if (myOrders.length === 0) {
+      container.innerHTML = '<p style="text-align:center; padding:20px;">आपने अभी तक कोई ऑर्डर नहीं दिया है।</p>';
+      return;
+    }
+
+    container.innerHTML = myOrders.map(o => {
+       const statusColor = o.status === 'Delivered' ? '#2e7d32' : '#fbc02d';
+       const statusText = o.status === 'Delivered' ? '✅ पूरा हुआ' : '⏳ नया ऑर्डर';
+       return `
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: var(--bg-card, #fff);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px;">
+            <span>ID: ${o.id}</span>
+            <span>${o.date.split(',')[0]}</span>
+          </div>
+          <div style="font-weight: bold; margin-bottom: 5px;">${o.items.map(i => `${i.name} (x${i.qty})`).join(', ')}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span style="color: #2e7d32; font-weight: bold;">₹${o.total.toLocaleString()}</span>
+             <span style="font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; background: ${statusColor}11; color: ${statusColor}; font-weight: bold;">${statusText}</span>
+          </div>
+        </div>
+       `;
+    }).join('');
+  });
+};
+
+window.closeOrdersModal = () => document.getElementById('orders-modal').style.display = 'none';
+
 // Firebase Authentication Functions
 function openAuthModal() {
   document.getElementById('auth-modal').style.display = 'block';
@@ -278,6 +339,7 @@ auth.onAuthStateChanged(async (user) => {
     // मेनू अपडेट करें
     document.getElementById('menu-login').style.display = 'none';
     document.getElementById('menu-profile').style.display = 'block';
+    document.getElementById('menu-orders').style.display = 'block';
     document.getElementById('menu-logout').style.display = 'block';
     
     console.log("User logged in:", user.uid);
@@ -314,6 +376,7 @@ auth.onAuthStateChanged(async (user) => {
     // मेनू रिसेट करें
     document.getElementById('menu-login').style.display = 'block';
     document.getElementById('menu-profile').style.display = 'none';
+    document.getElementById('menu-orders').style.display = 'none';
     document.getElementById('menu-logout').style.display = 'none';
 
     console.log("User logged out");

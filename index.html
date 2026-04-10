@@ -34,6 +34,8 @@
       <ul class="menu-list">
         <li id="menu-login" onclick="openAuthModal(); toggleMenu()">👤 लॉगिन / रजिस्टर</li>
         <li id="menu-profile" onclick="openCart(); toggleMenu()" style="display:none;">👤 मेरी प्रोफाइल</li>
+        <li id="menu-orders" onclick="openMyOrders(); toggleMenu()" style="display:none;">📦 मेरे ऑर्डर</li>
+        <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()">🌙 डार्क मोड चालू करें</li>
         <li onclick="location.href='#about-section'; toggleMenu()">ℹ️ स्टोर की जानकारी</li>
         <li onclick="location.href='admin.html'">🛠️ एडमिन पैनल</li>
         <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;">👋 लॉगआउट</li>
@@ -163,8 +165,21 @@
     </div>
   </div>
 
+  <!-- My Orders Modal -->
+  <div id="orders-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📦 मेरे ऑर्डर (My Orders)</h2>
+        <span class="close" onclick="closeOrdersModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="my-orders-list">
+        <!-- Orders via JS -->
+      </div>
+    </div>
+  </div>
+
   <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
-    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.10</span>
+    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.11</span>
   </footer>
 
   <!-- Firebase SDK -->
