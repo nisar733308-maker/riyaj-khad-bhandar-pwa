@@ -2,7 +2,7 @@
 
 // Firebase Configuration
 var firebaseConfig = {
-  apiKey: "AIzaSyCixWsFNzK4M0CdtcOp38smXFwJg0ZDSM0", 
+  apiKey: "AIzaSyCssU0rVx9INImuarodfqZQYpPJLK7W62Q", 
   authDomain: "riyaj-khad-store.firebaseapp.com",
   databaseURL: "https://riyaj-khad-store-default-rtdb.firebaseio.com",
   projectId: "riyaj-khad-store",
