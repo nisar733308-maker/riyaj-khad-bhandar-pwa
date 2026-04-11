@@ -609,30 +609,4 @@
     };
   </script>
 </body>
-</html>   </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>रियाज अहमद खाद भंडार</h1>
-            <p><strong>ग्राहकी खाता सारांश (Consolidated Bill)</strong></p>
-            <p>इलाहवास, बहादुरी बाजार, महाराजगंज | मो: 9936733308</p>
-          </div>
-          <div class="customer-info">
-            <p><strong>नाम:</strong> ${main.name} | <strong>मोबाइल:</strong> ${main.phone}</p>
-            <p><strong>पता:</strong> ${main.address}</p>
-            <p><strong>कुल ऑर्डर्स की संख्या:</strong> ${customerOrders.length}</p>
-          </div>
-          <table>
-            <thead><tr><th>उत्पाद</th><th>दर</th><th>मात्रा</th><th>कुल</th></tr></thead>
-            <tbody>${itemsHTML}</tbody>
-          </table>
-          <div class="total">कुल देय राशि: ₹${totalAmount.toLocaleString()}</div>
-        </body></html>`;
 
-      printWindow.document.write(invoiceHTML);
-      printWindow.document.close();
-      printWindow.print();
-    };
-  </script>
-</body>
-</html>
