@@ -127,12 +127,23 @@
         </div>
       </div>
       <div class="modal-footer">
+        <!-- कूपन कोड सेक्शन -->
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+          <input type="text" id="coupon-code" placeholder="कूपन कोड (उदा: RIYAJ10)" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+          <button onclick="window.applyCoupon()" style="background: #1b5e20; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">लागू करें</button>
+        </div>
+        <div id="discount-row" style="display: none; justify-content: space-between; color: #f44336; margin-bottom: 5px; font-weight: bold;">
+          <span>छूट (Discount):</span>
+          <span id="discount-amount">-₹0</span>
+        </div>
         <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;">
           <span>कुल राशि:</span>
           <span id="total">₹0</span>
         </div>
         <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
         <button onclick="window.payViaUPI()" style="background: #ff9800; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold;">💸 अभी पेमेंट करें (UPI)</button>
+        <button id="print-cart">🖨️ रसीद प्रिंट करें (Print)</button>
+        <button id="clear-cart">🗑️ कार्ट खाली करें (Clear)</button>
         <button onclick="closeCart()" style="background:#eee; color:#333; width:100%; padding:12px; border:none; border-radius:8px; margin-top:10px; cursor:pointer; font-weight:bold;">जारी रखें (Continue Shopping)</button>
       </div>
     </div>

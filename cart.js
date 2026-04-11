@@ -1,11 +1,13 @@
 // Cart logic with localStorage
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let appliedDiscount = 0; // 0.10 means 10%
 
 function addToCart(productId, quantity = 1) {
   // currentProducts (Firebase वाला डेटा) से सामान ढूंढें
   const source = (typeof currentProducts !== 'undefined' && currentProducts.length > 0) ? currentProducts : products;
   const product = source.find(p => String(p.id) === String(productId));
   
+  if (!product) return;
   const existingItem = cart.find(item => item.id === productId);
   
   if (existingItem) {
@@ -33,8 +35,13 @@ function updateCartCount() {
 
 function renderCartItems() {
   const container = document.getElementById('cart-items');
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const discountAmount = subtotal * appliedDiscount;
+  const total = subtotal - discountAmount;
   
+  const discountRow = document.getElementById('discount-row');
+  const discountDisplay = document.getElementById('discount-amount');
+
   if (cart.length === 0) {
     container.innerHTML = '<p>कार्ट खाली है</p>';
     document.getElementById('total').textContent = '₹0';
@@ -49,17 +56,24 @@ function renderCartItems() {
         <div style="color: #666;">₹${item.price}</div>
       </div>
       <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button onclick="changeQuantity(${item.id}, -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">-</button>
+        <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">-</button>
         <span style="min-width: 20px; text-align: center;">${item.quantity}</span>
-        <button onclick="changeQuantity(${item.id}, 1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
+        <button onclick="changeQuantity('${item.id}', 1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
       </div>
       <div style="font-weight: bold; min-width: 80px; text-align: right;">
         ₹${(item.price * item.quantity).toLocaleString()}
       </div>
-      <button onclick="removeFromCart(${item.id})" style="background: #f44336; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">हटाएं</button>
+      <button onclick="removeFromCart('${item.id}')" style="background: #f44336; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">हटाएं</button>
     </div>
   `).join('');
   
+  if (appliedDiscount > 0 && subtotal > 0) {
+    discountRow.style.display = 'flex';
+    discountDisplay.textContent = `-₹${discountAmount.toLocaleString()}`;
+  } else {
+    discountRow.style.display = 'none';
+  }
+
   document.getElementById('total').textContent = `₹${total.toLocaleString()}`;
 }
 
@@ -92,6 +106,22 @@ function clearCart() {
   closeCart();
 }
 
+// कूपन लागू करने का फंक्शन
+window.applyCoupon = () => {
+  const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  if (code === 'RIYAJ10') {
+    appliedDiscount = 0.10; // 10% छूट
+    if (window.showToast) window.showToast('✅ कूपन "RIYAJ10" लागू किया गया (10% छूट)');
+    else alert('✅ कूपन "RIYAJ10" लागू किया गया (10% छूट)');
+  } else if (code === "") {
+    appliedDiscount = 0;
+  } else {
+    alert('❌ अमान्य कूपन कोड');
+    appliedDiscount = 0;
+  }
+  renderCartItems();
+};
+
 document.getElementById('checkout').onclick = () => {
   if (cart.length === 0) return;
 
@@ -118,7 +148,8 @@ document.getElementById('checkout').onclick = () => {
   }
 
   const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal - (subtotal * appliedDiscount);
   
   // अगर यूजर लॉग इन है और उसने 'सेव करें' चेकबॉक्स पर टिक किया है, तो प्रोफाइल अपडेट करें
   if (window.currentUser && document.getElementById('save-customer-details').checked) {
@@ -144,32 +175,24 @@ document.getElementById('checkout').onclick = () => {
   cart.forEach(item => {
     message += `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}%0A`;
   });
+  if (appliedDiscount > 0) {
+    message += `%0A*छूट (10%):* -₹${subtotal * appliedDiscount}%0A`;
+  }
   message += `%0A*कुल राशि: ₹${total.toLocaleString()}*`;
 
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
   window.open(whatsappUrl, '_blank');
 
-  // UPI पेमेंट के लिए विकल्प (ऑप्शनल, व्हाट्सएप के बाद भी कर सकते हैं)
-  const upiUrl = `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
-  // अगर यूजर पेमेंट बटन दबाता है तो ही खोलें
-};
-
-window.payViaUPI = () => {
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  if(total === 0) return;
-  window.open(`upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`, '_blank');
-};
-
   // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
   const orderId = Date.now();
-  window.db.ref('orders/' + orderId).set({
+  db.ref('orders/' + orderId).set({
     id: orderId,
     date: new Date().toLocaleString('hi-IN'),
     userId: window.currentUser ? window.currentUser.uid : 'guest', // यूजर ID भी सेव करें
-    name: customerName,
-    phone: customerPhone,
-    address: customerAddress,
-    aadhar: customerAadhar,
+    name: customerName.trim(),
+    phone: customerPhone.trim(),
+    address: customerAddress.trim(),
+    aadhar: customerAadhar.trim(),
     items: cart.map(i => ({ name: i.name, qty: i.quantity, price: i.price })),
     total: total,
     status: 'New'
@@ -180,6 +203,13 @@ window.payViaUPI = () => {
   localStorage.removeItem('cart');
   updateCartCount();
   closeCart();
+};
+
+window.payViaUPI = () => {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal - (subtotal * appliedDiscount);
+  if(total === 0) return;
+  window.open(`upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`, '_blank');
 };
 
 function printInvoice() {
