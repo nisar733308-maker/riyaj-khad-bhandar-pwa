@@ -25,9 +25,24 @@ const installBtn = document.getElementById('install-btn');
 const shareBtn = document.getElementById('share-btn');
 
 let currentUser = null; // वर्तमान में लॉग इन उपयोगकर्ता
+
+// Custom Toast Function
+window.showToast = (message) => {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+};
+
 // Function to display products
 function displayProducts(items) {
   const container = document.getElementById('products-container');
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="skeleton" style="height:300px; width:100%;"></div>'.repeat(3);
+    return;
+  }
   container.innerHTML = items.map(product => {
     // औसत रेटिंग की गणना करें
     const avgRating = product.reviews && product.reviews.length > 0
