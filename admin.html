@@ -139,10 +139,15 @@
       const email = document.getElementById('admin-email').value;
       const pass = document.getElementById('admin-pass').value;
       
-      if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड दोनों भरें।");
+      if (!email || !pass) return alert("⚠️ कृपया ईमेल और पासवर्ड दोनों भरें।");
+      
+      if (email !== allowedAdminEmail) {
+        return alert("⛔ यह ईमेल एडमिन के रूप में रजिस्टर नहीं है।");
+      }
 
       auth.signInWithEmailAndPassword(email, pass).catch(error => {
-        alert("❌ लॉगिन विफल: " + error.message);
+        console.error("Login Error:", error.code);
+        alert("❌ लॉगिन विफल: " + (error.code === 'auth/invalid-login-credentials' ? "गलत पासवर्ड या ईमेल!" : error.message));
       });
     };
 

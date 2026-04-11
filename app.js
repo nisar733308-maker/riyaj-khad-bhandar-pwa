@@ -396,11 +396,11 @@ if (shareBtn) {
         await navigator.share({
           title: 'रियाज अहमद खाद भंडार',
           text: 'किसान भाइयों, अब घर बैठे खाद और कृषि उत्पाद ऑर्डर करें। रियाज अहमद खाद भंडार ऐप डाउनलोड करें!',
-          url: 'https://stupendous-crisp-9ed8a1.netlify.app/'
+          url: window.location.href // यह अपने आप नया GitHub लिंक ले लेगा
         });
       } catch (err) { console.log('Share failed or cancelled'); }
     } else {
-      navigator.clipboard.writeText('https://stupendous-crisp-9ed8a1.netlify.app/');
+      navigator.clipboard.writeText(window.location.href);
       alert('ऐप का लिंक कॉपी हो गया है! अब आप इसे व्हाट्सएप पर शेयर कर सकते हैं।');
     }
   });
