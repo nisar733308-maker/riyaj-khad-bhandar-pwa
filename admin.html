@@ -410,6 +410,21 @@
       }
     };
 
+    window.updateAdminPassword = () => {
+      const newPass = document.getElementById('new-admin-pass').value;
+      const confirmPass = document.getElementById('confirm-admin-pass').value;
+
+      if (!newPass || newPass.length < 6) return alert('❌ पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।');
+      if (newPass !== confirmPass) return alert('❌ दोनों पासवर्ड मैच नहीं कर रहे हैं।');
+
+      const user = auth.currentUser;
+      if (user) {
+        user.updatePassword(newPass)
+          .then(() => alert('✅ एडमिन पासवर्ड सफलतापूर्वक बदल गया है!'))
+          .catch(err => alert('❌ एरर: ' + err.message));
+      }
+    };
+
     window.saveStock = () => {
       currentProducts.forEach(p => {
         const input = document.getElementById(`stock-${p.id}`);

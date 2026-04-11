@@ -151,7 +151,7 @@ document.getElementById('checkout').onclick = () => {
 
   // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
   const orderId = Date.now();
-  firebase.database().ref('orders/' + orderId).set({
+  window.db.ref('orders/' + orderId).set({
     id: orderId,
     date: new Date().toLocaleString('hi-IN'),
     userId: window.currentUser ? window.currentUser.uid : 'guest', // यूजर ID भी सेव करें
