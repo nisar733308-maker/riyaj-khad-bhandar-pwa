@@ -149,6 +149,17 @@ document.getElementById('checkout').onclick = () => {
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
   window.open(whatsappUrl, '_blank');
 
+  // UPI पेमेंट के लिए विकल्प (ऑप्शनल, व्हाट्सएप के बाद भी कर सकते हैं)
+  const upiUrl = `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
+  // अगर यूजर पेमेंट बटन दबाता है तो ही खोलें
+};
+
+window.payViaUPI = () => {
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  if(total === 0) return;
+  window.open(`upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`, '_blank');
+};
+
   // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
   const orderId = Date.now();
   window.db.ref('orders/' + orderId).set({

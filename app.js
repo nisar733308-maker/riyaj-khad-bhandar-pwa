@@ -36,6 +36,36 @@ window.showToast = (message) => {
   setTimeout(() => toast.remove(), 2500);
 };
 
+// Featured Offers Data
+const featuredOffers = [
+  { title: "धमाका ऑफर! 💥", text: "यूरिया पर 10% की भारी छूट", bg: "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=800" },
+  { title: "मानसून सेल 🌧️", text: "कीटनाशकों पर 'एक के साथ एक' मुफ्त", bg: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800" },
+  { title: "नया स्टॉक उपलब्ध ✅", text: "इफको डीएपी अब दुकान पर आ चुका है", bg: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=800" }
+];
+
+function initSlider() {
+  const wrapper = document.getElementById('slider-wrapper');
+  if (!wrapper) return;
+
+  wrapper.innerHTML = featuredOffers.map(offer => `
+    <div class="slide" style="background-image: url('${offer.bg}')">
+      <div class="slide-overlay"></div>
+      <div class="slide-content">
+        <h2 style="font-size: 1.5rem; margin-bottom: 5px;">${offer.title}</h2>
+        <p style="font-size: 1rem; opacity: 0.9;">${offer.text}</p>
+      </div>
+    </div>
+  `).join('');
+
+  let currentIndex = 0;
+  if (featuredOffers.length > 1) {
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % featuredOffers.length;
+      wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }, 4000);
+  }
+}
+
 // Function to display products
 function displayProducts(items) {
   const container = document.getElementById('products-container');
@@ -51,19 +81,25 @@ function displayProducts(items) {
     const stars = '★'.repeat(avgRating) + '☆'.repeat(5 - avgRating);
     const isBestSeller = avgRating === 5 && product.reviews && product.reviews.length > 0;
     const bestSellerBadge = isBestSeller ? '<span class="best-seller-badge">✨ बेस्ट सेलर</span>' : '';
+    const lowStockBadge = product.stockCount < 10 ? '<span class="low-stock-badge">⚠️ स्टॉक कम है</span>' : '';
     const statusLabel = product.stockStatus === 'Limited' ? '⚠️ सीमित स्टॉक' : '✅ स्टॉक में उपलब्ध';
     const statusClass = product.stockStatus === 'Limited' ? 'status-limited' : 'status-in-stock';
 
     return `
       <div class="product-card">
         ${bestSellerBadge}
+        ${lowStockBadge}
         <img src="${product.image}" alt="${product.name}" onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">
         <h3 onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">${product.name}</h3>
         <div class="card-rating">${stars} <span style="font-size: 0.8rem; color: #666;">(${product.reviews ? product.reviews.length : 0})</span></div>
         <div class="stock-status ${statusClass}">${statusLabel}</div>
         <p>${product.desc}</p>
         <p class="price">₹${product.price}</p>
-        <button onclick="addToCart('${product.id}')">🛒 कार्ट में जोड़ें</button>
+        <div class="card-buttons">
+          <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">🛒 कार्ट</button>
+          <a href="tel:9936733308" class="call-btn">📞 कॉल</a>
+          <a href="upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR" class="pay-btn">💸 पेमेंट</a>
+        </div>
       </div>
     `;
   }).join('');
@@ -98,7 +134,11 @@ function openProductDetails(id) {
     <p style="font-size: 1.1rem; margin-bottom: 15px;">${product.desc}</p>
     <h2 style="color: #2e7d32; margin-bottom: 20px;">₹${product.price}</h2>
     ${reviewsHTML}
-    <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer;">कार्ट में जोड़ें</button>
+    <div class="modal-action-buttons" style="display: flex; gap: 10px;">
+      <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="flex: 2; background: #2e7d32; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛒 कार्ट में जोड़ें</button>
+      <a href="tel:9936733308" class="call-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #1976d2; color: white; border-radius: 8px; font-weight: bold;">📞 कॉल</a>
+      <a href="upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR" class="pay-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #ff9800; color: white; border-radius: 8px; font-weight: bold;">💸 पेमेंट</a>
+    </div>
   `;
   document.getElementById('product-modal').style.display = 'block';
 }
@@ -430,6 +470,7 @@ window.addEventListener('appinstalled', () => {
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
     if (!db) return;
+    initSlider(); // स्लाइडर शुरू करें
     db.ref('products').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {

@@ -156,6 +156,47 @@ nav {
   color: #2e7d32;
 }
 
+/* Slider Styles */
+.slider-container {
+  margin: 15px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  height: 180px;
+}
+
+.slider-wrapper {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.slide {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+}
+
+.slide-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.2));
+}
+
+.slide-content {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+}
+
 /* Toast Styles */
 .toast-container {
   position: fixed;
@@ -216,6 +257,40 @@ nav {
   transform: translateY(-5px);
 }
 
+.card-buttons {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.add-to-cart-btn {
+  flex: 2;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.call-btn, .pay-btn {
+  flex: 1;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: white;
+  padding: 10px 5px;
+}
+
+.call-btn { background: #1976d2; }
+.pay-btn { background: #ff9800; }
+
 .product-card img {
   width: 100%;
   height: 200px;
@@ -253,6 +328,20 @@ nav {
   right: 10px;
   background-color: #ffc107; /* Gold color */
   color: #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.low-stock-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #f44336;
+  color: white;
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 0.8rem;
