@@ -80,10 +80,15 @@ function displayProducts(items) {
       : 0;
     const stars = '★'.repeat(avgRating) + '☆'.repeat(5 - avgRating);
     const isBestSeller = avgRating === 5 && product.reviews && product.reviews.length > 0;
+    const isOutOfStock = product.stockCount <= 0;
+    
     const bestSellerBadge = isBestSeller ? '<span class="best-seller-badge">✨ बेस्ट सेलर</span>' : '';
-    const lowStockBadge = product.stockCount < 10 ? '<span class="low-stock-badge">⚠️ स्टॉक कम है</span>' : '';
-    const statusLabel = product.stockStatus === 'Limited' ? '⚠️ सीमित स्टॉक' : '✅ स्टॉक में उपलब्ध';
-    const statusClass = product.stockStatus === 'Limited' ? 'status-limited' : 'status-in-stock';
+    const lowStockBadge = (product.stockCount > 0 && product.stockCount < 10) 
+      ? '<span class="low-stock-badge">⚠️ स्टॉक कम है</span>' 
+      : (isOutOfStock ? '<span class="out-of-stock-badge">🚫 स्टॉक खत्म</span>' : '');
+    
+    const statusLabel = isOutOfStock ? '🚫 स्टॉक खत्म' : (product.stockStatus === 'Limited' ? '⚠️ सीमित स्टॉक' : '✅ स्टॉक में उपलब्ध');
+    const statusClass = isOutOfStock ? 'status-out-of-stock' : (product.stockStatus === 'Limited' ? 'status-limited' : 'status-in-stock');
 
     return `
       <div class="product-card">
@@ -96,9 +101,9 @@ function displayProducts(items) {
         <p>${product.desc}</p>
         <p class="price">₹${product.price}</p>
         <div class="card-buttons">
-          <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">🛒 कार्ट</button>
+          <button class="add-to-cart-btn" onclick="addToCart('${product.id}')" ${isOutOfStock ? 'disabled style="background:#ccc;"' : ''}>${isOutOfStock ? '❌ खत्म' : '🛒 कार्ट'}</button>
           <a href="tel:9936733308" class="call-btn">📞 कॉल</a>
-          <a href="upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR" class="pay-btn">💸 पेमेंट</a>
+          <a href="${isOutOfStock ? '#' : `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR`}" class="pay-btn" ${isOutOfStock ? 'style="background:#ccc; pointer-events:none;"' : ''}>💸 पेमेंट</a>
         </div>
       </div>
     `;
@@ -108,6 +113,7 @@ function displayProducts(items) {
 function openProductDetails(id) {
   const product = currentProducts.find(p => String(p.id) === String(id));
   const content = document.getElementById('product-details-content');
+  const isOutOfStock = product.stockCount <= 0;
   document.getElementById('modal-product-name').innerText = product.name;
   
   const reviewsHTML = product.reviews ? `
@@ -131,13 +137,13 @@ function openProductDetails(id) {
     <span class="details-badge ${product.stockStatus === 'Limited' ? 'status-limited-bg' : ''}">
       ${product.stockStatus === 'Limited' ? '⚠️' : '✅'} स्टॉक: ${product.stockCount} बोरी
     </span>
-    <p style="font-size: 1.1rem; margin-bottom: 15px;">${product.desc}</p>
+    <p style="font-size: 1.1rem; margin-bottom: 15px; color: ${isOutOfStock ? '#f44336' : 'inherit'}">${isOutOfStock ? 'यह सामान फिलहाल उपलब्ध नहीं है।' : product.desc}</p>
     <h2 style="color: #2e7d32; margin-bottom: 20px;">₹${product.price}</h2>
     ${reviewsHTML}
     <div class="modal-action-buttons" style="display: flex; gap: 10px;">
-      <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="flex: 2; background: #2e7d32; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛒 कार्ट में जोड़ें</button>
+      <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="flex: 2; background: ${isOutOfStock ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'स्टॉक खत्म' : '🛒 कार्ट में जोड़ें'}</button>
       <a href="tel:9936733308" class="call-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #1976d2; color: white; border-radius: 8px; font-weight: bold;">📞 कॉल</a>
-      <a href="upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR" class="pay-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #ff9800; color: white; border-radius: 8px; font-weight: bold;">💸 पेमेंट</a>
+      <a href="${isOutOfStock ? '#' : `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR`}" class="pay-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: ${isOutOfStock ? '#ccc' : '#ff9800'}; color: white; border-radius: 8px; font-weight: bold; ${isOutOfStock ? 'pointer-events:none;' : ''}">💸 पेमेंट</a>
     </div>
   `;
   document.getElementById('product-modal').style.display = 'block';
@@ -147,12 +153,57 @@ function closeProductModal() {
   document.getElementById('product-modal').style.display = 'none';
 }
 
+// सर्च हिस्ट्री लॉजिक
+let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+let searchTimeout;
+
+function saveSearch(term) {
+  if (!term || term.trim().length < 2) return;
+  term = term.trim();
+  searchHistory = searchHistory.filter(h => h.toLowerCase() !== term.toLowerCase());
+  searchHistory.unshift(term);
+  searchHistory = searchHistory.slice(0, 5); // केवल आखिरी 5 सर्च याद रखें
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+}
+
+function renderSearchHistory() {
+  const dropdown = document.getElementById('search-history');
+  if (searchHistory.length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+  dropdown.innerHTML = searchHistory.map(term => `
+    <div class="search-history-item">
+      <span onclick="window.applyHistorySearch('${term}')">🕒 ${term}</span>
+      <small onclick="window.deleteHistoryItem('${term}')" style="color:#f44336; font-size:1.2rem; cursor:pointer; padding:0 5px;">&times;</small>
+    </div>
+  `).join('');
+  dropdown.innerHTML += `<button class="clear-history-btn" onclick="window.clearAllHistory()">🗑️ सभी हिस्ट्री मिटाएं</button>`;
+  dropdown.style.display = 'block';
+}
+
+// सभी हिस्ट्री मिटाने का फंक्शन
+window.clearAllHistory = () => {
+  searchHistory = [];
+  localStorage.removeItem('searchHistory');
+  renderSearchHistory();
+};
+
 // Combined Filter Logic (Search + Rating)
 function filterProducts() {
   const term = document.getElementById('search').value.toLowerCase();
   const minRating = Number(document.getElementById('rating-filter').value);
   const sortType = document.getElementById('sort-filter').value;
   const category = document.getElementById('category-filter').value;
+
+  // सर्च हिस्ट्री छुपाएं जब ग्राहक टाइप करना शुरू करे
+  document.getElementById('search-history').style.display = 'none';
+
+  // 2 सेकंड रुकने के बाद सर्च शब्द सेव करें (Debounce)
+  clearTimeout(searchTimeout);
+  if (term.length >= 2) {
+    searchTimeout = setTimeout(() => saveSearch(document.getElementById('search').value), 2000);
+  }
 
   let result = currentProducts.filter(p => {
     const matchesTerm = p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term);
@@ -188,6 +239,20 @@ document.getElementById('clear-filters-btn').addEventListener('click', () => {
   // सभी फिल्टर हटाने के बाद लिस्ट को रिफ्रेश करें
   filterProducts();
 });
+
+// हिस्ट्री पर क्लिक करने पर सर्च अप्लाई करें
+window.applyHistorySearch = (term) => {
+  document.getElementById('search').value = term;
+  filterProducts();
+};
+
+// हिस्ट्री आइटम डिलीट करें
+window.deleteHistoryItem = (term) => {
+  event.stopPropagation(); // क्लिक को ऊपर जाने से रोकें
+  searchHistory = searchHistory.filter(h => h !== term);
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+  renderSearchHistory();
+};
 
 // चेक करें कि क्या ऐप पहले से इंस्टॉल है
 if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
@@ -470,6 +535,18 @@ window.addEventListener('appinstalled', () => {
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
     if (!db) return;
+    
+    // सर्च बार पर क्लिक करने पर हिस्ट्री दिखाएं
+    const searchInput = document.getElementById('search');
+    if (searchInput) searchInput.addEventListener('focus', renderSearchHistory);
+    
+    // बाहर क्लिक करने पर हिस्ट्री छुपाएं
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.filter-group')) {
+        document.getElementById('search-history').style.display = 'none';
+      }
+    });
+
     initSlider(); // स्लाइडर शुरू करें
     db.ref('products').on('value', (snapshot) => {
         const data = snapshot.val();

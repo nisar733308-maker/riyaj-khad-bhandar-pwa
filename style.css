@@ -110,6 +110,7 @@ nav {
   align-items: center;
   z-index: 100;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
 }
 
 .filter-group {
@@ -117,6 +118,47 @@ nav {
   gap: 8px;
   width: 90%;
   flex-wrap: wrap;
+  position: relative;
+}
+
+.search-history-dropdown {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  display: none;
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.search-history-item {
+  padding: 12px 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.search-history-item:hover {
+  background: #f1f8f1;
+}
+
+.clear-history-btn {
+  width: 100%;
+  padding: 10px;
+  background: #fff;
+  border: none;
+  color: #f44336;
+  font-weight: bold;
+  cursor: pointer;
+  border-top: 1px solid #eee;
 }
 
 #search {
@@ -350,6 +392,20 @@ nav {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.out-of-stock-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #757575;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* Modal Styles */
 .modal {
   display: none;
@@ -374,6 +430,16 @@ nav {
   display: flex;
   flex-direction: column;
   max-height: 80vh;
+}
+
+/* Side Drawer specific for Cart */
+#cart-modal .modal-content {
+  margin: 0 0 0 auto;
+  height: 100vh;
+  max-height: 100vh;
+  width: 400px;
+  max-width: 90%;
+  border-radius: 0;
 }
 
 .modal-header {
@@ -475,6 +541,7 @@ nav {
 
 .status-in-stock { color: #2e7d32; }
 .status-limited { color: #f44336; }
+.status-out-of-stock { color: #757575; }
 
 .status-limited-bg {
   background: #ffebee !important;
@@ -535,6 +602,14 @@ body.dark-mode .review-card {
   color: #e0e0e0;
   border-color: #333;
 }
+
+body.dark-mode .search-history-dropdown {
+  background-color: #1e1e1e;
+  border-color: #444;
+  color: #e0e0e0;
+}
+body.dark-mode .search-history-item { border-color: #333; }
+body.dark-mode .search-history-item:hover { background: #2c2c2c; }
 
 body.dark-mode #search,
 body.dark-mode select,

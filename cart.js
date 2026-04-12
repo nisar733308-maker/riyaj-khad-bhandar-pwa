@@ -8,6 +8,11 @@ function addToCart(productId, quantity = 1) {
   const product = source.find(p => String(p.id) === String(productId));
   
   if (!product) return;
+  if (product.stockCount <= 0) {
+    if (window.showToast) window.showToast("❌ यह सामान अभी स्टॉक में नहीं है।");
+    else alert("❌ यह सामान अभी स्टॉक में नहीं है।");
+    return;
+  }
   const existingItem = cart.find(item => String(item.id) === String(productId));
   
   if (existingItem) {

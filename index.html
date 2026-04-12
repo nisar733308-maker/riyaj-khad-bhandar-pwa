@@ -27,15 +27,15 @@
   </header>
 
   <!-- 3-Dots Side Menu -->
-  <div id="side-menu" class="side-menu">
-    <div class="menu-content">
+  <div id="side-menu" class="side-menu" onclick="toggleMenu()">
+    <div class="menu-content" onclick="event.stopPropagation()">
       <div class="menu-header">
         <h3>📋 मेनू</h3>
         <span onclick="toggleMenu()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
       </div>
       <ul class="menu-list">
         <li id="menu-login" onclick="openAuthModal(); toggleMenu()">👤 लॉगिन / रजिस्टर</li>
-        <li id="menu-profile" onclick="openCart(); toggleMenu()" style="display:none;">👤 मेरी प्रोफाइल</li>
+        <li id="menu-profile" onclick="window.openProfileModal(); toggleMenu()" style="display:none;">👤 मेरी प्रोफाइल</li>
         <li id="menu-orders" onclick="openMyOrders(); toggleMenu()" style="display:none;">📦 मेरे ऑर्डर</li>
         <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()">🌙 डार्क मोड चालू करें</li>
         <li onclick="location.href='#about-section'; toggleMenu()">ℹ️ स्टोर की जानकारी</li>
@@ -48,6 +48,7 @@
   <nav>
     <div class="filter-group">
       <input id="search" placeholder="उत्पाद खोजें...">
+      <div id="search-history" class="search-history-dropdown"></div>
       <a href="#about-section" style="text-decoration:none; color:#2e7d32; font-weight:bold; font-size:0.9rem; align-self:center; margin:0 10px;">ℹ️ स्टोर जानकारी</a>
       <select id="category-filter">
         <option value="all">📁 सभी श्रेणियां</option>
@@ -158,6 +159,25 @@
       </div>
       <div class="modal-body" id="product-details-content">
         <!-- Content via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>👤 मेरी प्रोफाइल</h2>
+        <span class="close" onclick="window.closeProfileModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="profile-data-display" style="background:#f9f9f9; padding:15px; border-radius:10px; line-height:2;">
+          <p><strong>नाम:</strong> <span id="prof-name"></span></p>
+          <p><strong>मोबाइल:</strong> <span id="prof-phone"></span></p>
+          <p><strong>पता:</strong> <span id="prof-address"></span></p>
+          <p><strong>आधार:</strong> <span id="prof-aadhar"></span></p>
+        </div>
+        <button onclick="window.editCustomerDetails(); window.closeProfileModal(); window.openCart();" style="width:100%; margin-top:15px; padding:12px; background:#1976d2; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">विवरण बदलें</button>
       </div>
     </div>
   </div>
