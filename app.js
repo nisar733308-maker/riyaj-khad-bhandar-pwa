@@ -110,6 +110,7 @@ function initSlider() {
 // Function to display products
 function displayProducts(items) {
   const container = document.getElementById('products-container');
+  const t = translations[currentLang] || translations.hi;
   if (!items || items.length === 0) {
     container.innerHTML = '<div class="skeleton" style="height:300px; width:100%;"></div>'.repeat(3);
     return;
