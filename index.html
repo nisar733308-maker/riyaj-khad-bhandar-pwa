@@ -18,13 +18,6 @@
 
   <header>
     <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
-    <div class="lang-selector" style="position: absolute; left: 15px; top: 15px; z-index: 10;">
-      <select id="app-lang" onchange="window.changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; border: none; font-weight: bold; font-size: 0.8rem; background: rgba(255,255,255,0.9);">
-        <option value="hi">हिन्दी</option>
-        <option value="en">English</option>
-        <option value="bho">भोजपुरी</option>
-      </select>
-    </div>
     <h1 id="shop-title" style="margin-bottom: 10px; padding-top: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
     <p id="shop-desc">खाद और कृषि उत्पाद</p>
     <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
@@ -41,10 +34,18 @@
         <span onclick="toggleMenu()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
       </div>
       <ul class="menu-list">
+        <li style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+          🌐 <select id="app-lang" onchange="window.changeLanguage(this.value)" style="flex:1; margin-left:10px; padding:5px; border-radius:5px;">
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="en">English</option>
+            <option value="bho">भोजपुरी (Bhojpuri)</option>
+          </select>
+        </li>
         <li id="menu-login" onclick="openAuthModal(); toggleMenu()">👤 लॉगिन / रजिस्टर</li>
         <li id="menu-profile" onclick="window.openProfileModal(); toggleMenu()" style="display:none;">👤 मेरी प्रोफाइल</li>
         <li id="menu-orders" onclick="openMyOrders(); toggleMenu()" style="display:none;">📦 मेरे ऑर्डर</li>
         <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()">🌙 डार्क मोड चालू करें</li>
+        <li><a href="tel:9936733308" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px; width:100%;">📞 कॉल करें (Call Us)</a></li>
         <li onclick="location.href='#about-section'; toggleMenu()">ℹ️ स्टोर की जानकारी</li>
         <li onclick="location.href='admin.html'">🛠️ एडमिन पैनल</li>
         <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;">👋 लॉगआउट</li>
@@ -99,6 +100,7 @@
         <p><strong>🏠 पता:</strong> इलाहवास, बहादुरी बाजार, महाराजगंज, उत्तर प्रदेश, भारत</p>
         <p><strong>📞 मोबाइल:</strong> <a href="tel:9936733308">9936733308</a></p>
         <p><strong>📧 ईमेल:</strong> <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
+        <a href="tel:9936733308" class="call-btn" style="margin-top: 15px; padding: 12px; text-align: center; display: block; text-decoration: none;">📞 अभी कॉल करें (Call Now)</a>
         <a href="https://www.google.com/maps/search/?api=1&query=Riyaj+Ahmad+Khad+Bhandar+Bahaduri+Bazar+Maharajganj" target="_blank" class="maps-btn">📍 दुकान का रास्ता देखें (Google Maps)</a>
       </div>
     </div>
@@ -151,11 +153,15 @@
           <span>कुल राशि:</span>
           <span id="total">₹0</span>
         </div>
-        <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
-        <button onclick="window.payViaUPI()" style="background: #ff9800; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold;">💸 अभी पेमेंट करें (UPI)</button>
-        <button id="print-cart">🖨️ रसीद प्रिंट करें (Print)</button>
-        <button id="clear-cart">🗑️ कार्ट खाली करें (Clear)</button>
-        <button onclick="closeCart()" style="background:#eee; color:#333; width:100%; padding:12px; border:none; border-radius:8px; margin-top:10px; cursor:pointer; font-weight:bold;">जारी रखें (Continue Shopping)</button>
+        <div class="cart-action-group">
+          <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
+          <div class="btn-secondary-row">
+            <button class="btn-pay" onclick="window.payViaUPI()" id="btn-pay-text">💸 पेमेंट</button>
+            <button class="btn-print" id="print-cart">🖨️ रसीद</button>
+            <button class="btn-clear" id="clear-cart">🗑️ साफ</button>
+          </div>
+          <button onclick="closeCart()" class="btn-continue" id="btn-continue-text">जारी रखें</button>
+        </div>
       </div>
     </div>
   </div>

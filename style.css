@@ -468,10 +468,21 @@ nav {
   cursor: pointer;
 }
 
-#checkout, #clear-cart, #print-cart {
+.cart-action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-secondary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+
+#checkout {
   width: 100%;
   padding: 12px;
-  margin-top: 10px;
   border: none;
   border-radius: 8px;
   font-weight: bold;
@@ -481,17 +492,14 @@ nav {
 #checkout {
   background: #2e7d32;
   color: white;
+  font-size: 1.1rem;
 }
 
-#print-cart {
-  background: #1976d2;
-  color: white;
-}
+.btn-pay { background: #ff9800; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer; }
+.btn-print { background: #1976d2; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer; }
+.btn-clear { background: #f44336; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer; }
 
-#clear-cart {
-  background: #f44336;
-  color: white;
-}
+.btn-continue { background: #eee; color: #333; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
 
 .details-img {
   width: 100%;

@@ -13,16 +13,27 @@ var firebaseConfig = {
 
 // Translation Dictionary
 const translations = {
-  hi: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट" },
-  en: { shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment" },
-  bho: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं" }
+  hi: { 
+    shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", 
+    search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद" 
+  },
+  en: { 
+    shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", 
+    search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print" 
+  },
+  bho: { 
+    shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", 
+    search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची" 
+  }
 };
 
+let currentLang = localStorage.getItem('appLanguage') || 'hi';
+
 window.changeLanguage = (lang) => {
+  currentLang = lang;
   localStorage.setItem('appLanguage', lang);
   applyTranslations(lang);
-  // पन्ने को दोबारा लोड करने की ज़रूरत नहीं, सीधे UI बदलें
-  if(typeof filterProducts === 'function') filterProducts();
+  displayProducts(filteredProducts); 
 };
 
 function applyTranslations(lang) {
@@ -130,11 +141,7 @@ function displayProducts(items) {
         <div class="stock-status ${statusClass}">${statusLabel}</div>
         <p>${product.desc}</p>
         <p class="price">₹${product.price}</p>
-        <div class="card-buttons">
-          <button class="add-to-cart-btn" onclick="addToCart('${product.id}')" ${isOutOfStock ? 'disabled style="background:#ccc;"' : ''}>${isOutOfStock ? '❌ खत्म' : '🛒 कार्ट'}</button>
-          <a href="tel:9936733308" class="call-btn">📞 कॉल</a>
-          <a href="${isOutOfStock ? '#' : `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR`}" class="pay-btn" ${isOutOfStock ? 'style="background:#ccc; pointer-events:none;"' : ''}>💸 पेमेंट</a>
-        </div>
+        <button class="add-to-cart-btn" style="width:100%;" onclick="addToCart('${product.id}')" ${isOutOfStock ? 'disabled style="background:#ccc;"' : ''}>${isOutOfStock ? '❌' : t.cart}</button>
       </div>
     `;
   }).join('');
@@ -143,6 +150,7 @@ function displayProducts(items) {
 function openProductDetails(id) {
   const product = currentProducts.find(p => String(p.id) === String(id));
   const content = document.getElementById('product-details-content');
+  const t = translations[currentLang] || translations.hi;
   const isOutOfStock = product.stockCount <= 0;
   document.getElementById('modal-product-name').innerText = product.name;
   
@@ -170,10 +178,8 @@ function openProductDetails(id) {
     <p style="font-size: 1.1rem; margin-bottom: 15px; color: ${isOutOfStock ? '#f44336' : 'inherit'}">${isOutOfStock ? 'यह सामान फिलहाल उपलब्ध नहीं है।' : product.desc}</p>
     <h2 style="color: #2e7d32; margin-bottom: 20px;">₹${product.price}</h2>
     ${reviewsHTML}
-    <div class="modal-action-buttons" style="display: flex; gap: 10px;">
-      <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="flex: 2; background: ${isOutOfStock ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'स्टॉक खत्म' : '🛒 कार्ट में जोड़ें'}</button>
-      <a href="tel:9936733308" class="call-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #1976d2; color: white; border-radius: 8px; font-weight: bold;">📞 कॉल</a>
-      <a href="${isOutOfStock ? '#' : `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${product.price}&cu=INR`}" class="pay-btn" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: ${isOutOfStock ? '#ccc' : '#ff9800'}; color: white; border-radius: 8px; font-weight: bold; ${isOutOfStock ? 'pointer-events:none;' : ''}">💸 पेमेंट</a>
+    <div class="modal-action-buttons">
+      <button onclick="addToCart('${product.id}', 1); closeProductModal();" style="width: 100%; background: ${isOutOfStock ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'स्टॉक खत्म' : t.cart}</button>
     </div>
   `;
   document.getElementById('product-modal').style.display = 'block';
@@ -597,7 +603,15 @@ window.addEventListener('appinstalled', () => {
 
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
-    if (!db) return;
+    if (!db) {
+        console.error("Firebase not initialized");
+        // Fallback: If DB fails, show local products
+        if (typeof products !== 'undefined') {
+            currentProducts = products;
+            displayProducts(currentProducts);
+        }
+        return;
+    }
     
     const savedLang = localStorage.getItem('appLanguage') || 'hi';
     document.getElementById('app-lang').value = savedLang;
