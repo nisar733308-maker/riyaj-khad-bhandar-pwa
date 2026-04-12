@@ -15,15 +15,15 @@ var firebaseConfig = {
 const translations = {
   hi: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", 
-    search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद" 
+    search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", qr: "🖼️ QR कोड", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद" 
   },
   en: { 
     shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", 
-    search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print" 
+    search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", qr: "🖼️ QR Code", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print" 
   },
   bho: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", 
-    search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची" 
+    search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", qr: "🖼️ QR कोड", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची" 
   }
 };
 
@@ -47,6 +47,14 @@ function applyTranslations(lang) {
   if(shopDesc) shopDesc.innerText = t.shopDesc;
   if(cartCount) cartCount.innerHTML = t.cart + " " + (cart.length || 0);
   if(menuLogin) menuLogin.innerText = t.login;
+
+  // बटन के टेक्स्ट भी बदलें
+  if(document.getElementById('checkout')) document.getElementById('checkout').innerText = t.checkout;
+  if(document.getElementById('btn-pay-text')) document.getElementById('btn-pay-text').innerText = t.pay;
+  if(document.getElementById('btn-qr-text')) document.getElementById('btn-qr-text').innerText = t.qr;
+  if(document.getElementById('btn-continue-text')) document.getElementById('btn-continue-text').innerText = t.continue;
+  if(document.getElementById('clear-cart')) document.getElementById('clear-cart').innerText = t.clear;
+  if(document.getElementById('print-cart')) document.getElementById('print-cart').innerText = t.print;
   
   // Re-render products to update labels if needed
   if(typeof filterProducts === 'function') filterProducts();

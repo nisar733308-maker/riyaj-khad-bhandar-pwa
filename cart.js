@@ -180,6 +180,8 @@ async function handleCheckout() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   
+  const screenshotBase64 = document.getElementById('screenshot-base64').value;
+
   // अगर यूजर लॉग इन है और उसने 'सेव करें' चेकबॉक्स पर टिक किया है, तो प्रोफाइल अपडेट करें
   if (window.currentUser && document.getElementById('save-customer-details').checked) {
     window.db.ref('users/' + window.currentUser.uid).set({
@@ -207,6 +209,9 @@ async function handleCheckout() {
   if (appliedDiscount > 0) {
     message += `%0A*छूट (10%):* -₹${subtotal * appliedDiscount}%0A`;
   }
+  if (screenshotBase64) {
+    message += `%0A%0A📸 *पेमेंट स्क्रीनशॉट अपलोड कर दिया गया है (Admin Panel में देखें)*`;
+  }
   message += `%0A*कुल राशि: ₹${total.toLocaleString()}*`;
 
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
@@ -224,6 +229,7 @@ async function handleCheckout() {
     aadhar: customerAadhar.trim(),
     items: cart.map(i => ({ name: i.name, qty: i.quantity, price: i.price })),
     total: total,
+    paymentScreenshot: screenshotBase64 || null,
     status: 'New'
   });
 
@@ -231,6 +237,9 @@ async function handleCheckout() {
   cart = [];
   localStorage.removeItem('cart');
   appliedDiscount = 0; // कूपन रिसेट करें
+  document.getElementById('screenshot-base64').value = '';
+  document.getElementById('payment-screenshot').value = '';
+  document.getElementById('qr-payment-container').style.display = 'none';
   updateCartCount();
   closeCart();
 }
@@ -244,8 +253,55 @@ window.payViaUPI = () => {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
-  window.location.href = `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
+  window.location.href = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
 };
+
+window.showPaymentQR = () => {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal - (subtotal * appliedDiscount);
+  if(total === 0) return alert("कार्ट खाली है!");
+  
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
+  const qrContainer = document.getElementById('qr-payment-container');
+  
+  qrContainer.innerHTML = `
+    <div style="text-align:center; padding:15px; background:#fff; border:2px solid #673ab7; border-radius:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top:10px;">
+      <p style="font-weight:bold; color:#673ab7; margin-bottom:10px;">स्कैन करके पेमेंट करें</p>
+      <img src="${qrUrl}" alt="Payment QR" style="width:200px; height:200px; border:1px solid #eee; padding:5px;">
+      <p style="font-size:0.8rem; color:#666; margin-top:5px;">UPI ID: 9936733308-3@ybl</p>
+      <button onclick="document.getElementById('qr-payment-container').style.display='none'" style="margin-top:10px; background:#f44336; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">बंद करें (Close)</button>
+    </div>
+  `;
+  qrContainer.style.display = 'block';
+};
+
+async function compressPaymentImage(base64Str) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 800;
+      const MAX_HEIGHT = 800;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+      } else {
+        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      // क्वालिटी को 0.6 (60%) रखा है ताकि डेटाबेस पर लोड न पड़े
+      resolve(canvas.toDataURL('image/jpeg', 0.6));
+    };
+  });
+}
 
 function printInvoice() {
   if (cart.length === 0) return;
@@ -294,6 +350,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('print-cart').onclick = printInvoice;
   const checkoutBtn = document.getElementById('checkout');
   if (checkoutBtn) checkoutBtn.onclick = handleCheckout;
+
+  // स्क्रीनशॉट हैंडलर
+  const screenshotInput = document.getElementById('payment-screenshot');
+  if (screenshotInput) {
+    screenshotInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const compressed = await compressPaymentImage(event.target.result);
+          document.getElementById('screenshot-base64').value = compressed;
+          if (window.showToast) window.showToast("✅ स्क्रीनशॉट तैयार है!");
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  }
+
   updateCartCount();
 });
 

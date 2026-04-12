@@ -153,10 +153,17 @@
           <span>कुल राशि:</span>
           <span id="total">₹0</span>
         </div>
+        <div id="qr-payment-container" style="display: none; margin-bottom: 15px;"></div>
+        <div id="screenshot-upload-section" style="margin-bottom: 15px; border: 1px dashed #673ab7; padding: 10px; border-radius: 8px; background: #f9f6ff;">
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #673ab7;">📸 पेमेंट का स्क्रीनशॉट अपलोड करें (Optional):</label>
+          <input type="file" id="payment-screenshot" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+          <input type="hidden" id="screenshot-base64">
+        </div>
         <div class="cart-action-group">
           <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
           <div class="btn-secondary-row">
             <button class="btn-pay" onclick="window.payViaUPI()" id="btn-pay-text">💸 पेमेंट</button>
+            <button class="btn-qr" onclick="window.showPaymentQR()" id="btn-qr-text" style="background: #673ab7; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer;">🖼️ QR कोड</button>
             <button class="btn-print" id="print-cart">🖨️ रसीद</button>
             <button class="btn-clear" id="clear-cart">🗑️ साफ</button>
           </div>
