@@ -508,6 +508,26 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
+// Profile Modal Logic
+window.openProfileModal = () => {
+  if (!currentUser) return;
+  db.ref('users/' + currentUser.uid).once('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      document.getElementById('prof-name').textContent = data.name || 'N/A';
+      document.getElementById('prof-phone').textContent = data.phone || 'N/A';
+      document.getElementById('prof-address').textContent = data.address || 'N/A';
+      document.getElementById('prof-aadhar').textContent = data.aadhar || 'N/A';
+      document.getElementById('profile-modal').style.display = 'block';
+    } else {
+      alert("प्रोफाइल जानकारी नहीं मिली। कृपया कार्ट में अपनी जानकारी भरें।");
+      window.openCart();
+    }
+  });
+};
+
+window.closeProfileModal = () => document.getElementById('profile-modal').style.display = 'none';
+
 // Share App Logic
 if (shareBtn) {
   shareBtn.addEventListener('click', async () => {
