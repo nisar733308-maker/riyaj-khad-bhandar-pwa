@@ -65,7 +65,7 @@ let installPrompt;
 const installBtn = document.getElementById('install-btn');
 const shareBtn = document.getElementById('share-btn');
 
-let currentUser = null; // वर्तमान में लॉग इन उपयोगकर्ता
+window.currentUser = null; // ग्लोबल एक्सेस के लिए window.currentUser का उपयोग करें
 
 // Custom Toast Function
 window.showToast = (message) => {
@@ -505,7 +505,7 @@ async function logoutUser() {
 // Firebase Auth State Listener
 auth.onAuthStateChanged(async (user) => {
   if (user) {
-    currentUser = user;
+    window.currentUser = user;
     // लॉगिन होने पर मेनू में 'मेरी प्रोफाइल' और 'लॉगआउट' दिखाएं
     document.getElementById('menu-login').style.display = 'none';
     document.getElementById('menu-profile').style.display = 'block';
@@ -542,7 +542,7 @@ auth.onAuthStateChanged(async (user) => {
       }
     });
   } else {
-    currentUser = null;
+    window.currentUser = null;
     // मेनू रिसेट करें
     document.getElementById('menu-login').style.display = 'block';
     document.getElementById('menu-profile').style.display = 'none';
@@ -560,7 +560,7 @@ auth.onAuthStateChanged(async (user) => {
 
 // Profile Modal Logic
 window.openProfileModal = () => {
-  if (!currentUser) return;
+  if (!window.currentUser) return;
   db.ref('users/' + currentUser.uid).once('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -577,6 +577,34 @@ window.openProfileModal = () => {
 };
 
 window.closeProfileModal = () => document.getElementById('profile-modal').style.display = 'none';
+
+// Firebase से प्रोडक्ट लोड करने का मुख्य फंक्शन
+window.loadProductsFromFirebase = () => {
+  if (!db) return;
+  
+  const container = document.getElementById('products-container');
+  // लोडिंग के दौरान स्केलेटन दिखाएं
+  container.innerHTML = '<div class="skeleton" style="height:300px; width:100%;"></div>'.repeat(3);
+
+  db.ref('products').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+          currentProducts = Object.keys(data).map(key => ({ ...data[key], id: String(data[key].id || key) }));
+          filteredProducts = [...currentProducts];
+          displayProducts(filteredProducts);
+      } else {
+          const initialData = (typeof products !== 'undefined') ? products : [];
+          initialData.forEach(p => db.ref('products/' + p.id).set(p));
+      }
+  }, (error) => {
+      console.error("Firebase Error:", error);
+      container.innerHTML = `
+        <div style="text-align: center; padding: 50px; grid-column: 1 / -1;">
+          <p style="color: #f44336; margin-bottom: 15px; font-weight: bold;">❌ सामान लोड नहीं हो पाया।</p>
+          <button onclick="window.loadProductsFromFirebase()" style="background: #1976d2; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">🔄 दोबारा कोशिश करें (Retry)</button>
+        </div>`;
+  });
+};
 
 // Share App Logic
 if (shareBtn) {
@@ -630,30 +658,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     initSlider(); // स्लाइडर शुरू करें
-    db.ref('products').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            currentProducts = Object.keys(data).map(key => {
-                const item = data[key];
-                return { ...item, id: String(item.id || key) };
-            });
-            filteredProducts = [...currentProducts];
-            displayProducts(filteredProducts);
-        } else {
-            const initialData = (typeof products !== 'undefined') ? products : [];
-            initialData.forEach(p => db.ref('products/' + p.id).set(p));
-        }
-    }, (error) => {
-        console.error("Firebase Error:", error);
-        alert("❌ डेटाबेस एरर: शायद आपके Firebase Rules 'true' नहीं हैं।");
-    });
+    window.loadProductsFromFirebase();
 });
 
 window.openCart = () => {
   renderCartItems();
   document.getElementById('cart-modal').style.display = 'block';
-  // कार्ट खुलने पर लॉगिन स्थिति के अनुसार UI अपडेट करें
-  if (currentUser) {
+  // लॉगिन की सही जांच करें
+  if (window.currentUser) {
     document.getElementById('logged-in-user-info').style.display = 'block';
     document.getElementById('customer-input-fields').style.display = 'none';
     document.getElementById('login-prompt-in-cart').style.display = 'none';
