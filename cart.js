@@ -152,7 +152,7 @@ window.fetchCurrentLocation = () => {
   });
 };
 
-function handleCheckout() {
+async function handleCheckout() {
   if (cart.length === 0) return;
   if (!window.currentUser) {
     alert("❌ ऑर्डर करने के लिए पहले लॉगिन करना अनिवार्य है।");
@@ -160,27 +160,21 @@ function handleCheckout() {
     return;
   }
 
-  // ग्राहक की जानकारी इनपुट फील्ड से लें
-  const customerName = document.getElementById('customer-name').value;
-  const customerPhone = document.getElementById('customer-phone').value;
-  const customerAddress = document.getElementById('customer-address').value;
-  const customerAadhar = document.getElementById('customer-aadhar').value;
+  // प्रोफाइल से डेटा लें
+  const snapshot = await window.db.ref('users/' + window.currentUser.uid).once('value');
+  const userData = snapshot.val();
 
-  const phoneRegex = /^[0-9]{10}$/;
-  const aadharRegex = /^[0-9]{12}$/;
+  if (!userData || !userData.name || !userData.phone || !userData.addresses || userData.addresses.length === 0) {
+    alert("❌ आपका प्रोफाइल या पता अधूरा है। कृपया 'मेरी प्रोफाइल' में कम से कम एक पता जोड़ें।");
+    window.openProfileModal();
+    return;
+  }
 
-  if (!customerName.trim() || !customerAddress.trim()) {
-    alert('कृपया नाम और पता भरें।');
-    return;
-  }
-  if (!phoneRegex.test(customerPhone)) {
-    alert('❌ मोबाइल नंबर 10 अंकों का होना चाहिए।');
-    return;
-  }
-  if (!aadharRegex.test(customerAadhar)) {
-    alert('❌ आधार कार्ड नंबर 12 अंकों का होना चाहिए।');
-    return;
-  }
+  // यदि एक से अधिक पते हैं, तो पहला वाला चुनें (या बाद में आप यहाँ एक पॉपअप भी दिखा सकते हैं)
+  const customerAddress = userData.addresses[0]; 
+  const customerName = userData.name;
+  const customerPhone = userData.phone;
+  const customerAadhar = userData.aadhar;
 
   const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);

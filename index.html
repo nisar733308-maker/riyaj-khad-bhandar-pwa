@@ -186,14 +186,20 @@
         <h2>👤 मेरी प्रोफाइल</h2>
         <span class="close" onclick="window.closeProfileModal()">&times;</span>
       </div>
-      <div class="modal-body">
-        <div id="profile-data-display" style="background:#f9f9f9; padding:15px; border-radius:10px; line-height:2;">
-          <p><strong>नाम:</strong> <span id="prof-name"></span></p>
-          <p><strong>मोबाइल:</strong> <span id="prof-phone"></span></p>
-          <p><strong>पता:</strong> <span id="prof-address"></span></p>
-          <p><strong>आधार:</strong> <span id="prof-aadhar"></span></p>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="text" id="prof-input-name" placeholder="आपका पूरा नाम" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        <input type="tel" id="prof-input-phone" placeholder="मोबाइल नंबर" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        <input type="number" id="prof-input-aadhar" placeholder="आधार नंबर" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        
+        <h4 style="margin-top:10px;">📍 मेरे सेव किए गए पते:</h4>
+        <div id="saved-addresses-list"></div>
+        
+        <div style="display: flex; gap: 5px;">
+          <input type="text" id="prof-input-address" placeholder="पूरा पता" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px;">
+          <button onclick="window.fetchCurrentLocation()" style="padding:10px; background:#1976d2; color:white; border:none; border-radius:8px;">📍</button>
+          <button onclick="window.addAddressFromInput()" style="padding:10px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold;">➕</button>
         </div>
-        <button onclick="window.editCustomerDetails(); window.closeProfileModal(); window.openCart();" style="width:100%; margin-top:15px; padding:12px; background:#1976d2; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">विवरण बदलें</button>
+        <button onclick="window.saveProfileData()" style="width:100%; margin-top:10px; padding:15px; background:#1976d2; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✅ बेसिक जानकारी सेव करें</button>
       </div>
     </div>
   </div>

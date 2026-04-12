@@ -305,12 +305,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   installPrompt = e;
   
-  // अगर पहले से इंस्टॉल नहीं है, तभी बटन दिखाएं
-  if (!window.matchMedia('(display-mode: standalone)').matches) {
-    installBtn.style.display = 'block';
-    console.log("Install prompt ready and visible");
-  }
+  // बटन को दिखाने के लिए मजबूर करें यदि ऐप इंस्टॉल नहीं है
+  installBtn.style.display = 'block';
+  console.log("Install prompt ready and visible");
 });
+
+// अगर ब्राउज़र ने पहले ही प्रॉम्प्ट रोक दिया है, तो भी बटन दिखाने की कोशिश करें
+if (!window.matchMedia('(display-mode: standalone)').matches && !installPrompt) {
+    setTimeout(() => { if(!installPrompt) installBtn.style.display = 'none'; }, 5000);
+}
 
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
 if (isIOS && !window.navigator.standalone) {
@@ -561,19 +564,72 @@ auth.onAuthStateChanged(async (user) => {
 // Profile Modal Logic
 window.openProfileModal = () => {
   if (!window.currentUser) return;
-  db.ref('users/' + currentUser.uid).once('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      document.getElementById('prof-name').textContent = data.name || 'N/A';
-      document.getElementById('prof-phone').textContent = data.phone || 'N/A';
-      document.getElementById('prof-address').textContent = data.address || 'N/A';
-      document.getElementById('prof-aadhar').textContent = data.aadhar || 'N/A';
-      document.getElementById('profile-modal').style.display = 'block';
-    } else {
-      alert("प्रोफाइल जानकारी नहीं मिली। कृपया कार्ट में अपनी जानकारी भरें।");
-      window.openCart();
-    }
+  renderProfileUI();
+  document.getElementById('profile-modal').style.display = 'block';
+};
+
+async function renderProfileUI() {
+  if (!window.currentUser) return;
+  const snapshot = await db.ref('users/' + window.currentUser.uid).once('value');
+  const data = snapshot.val() || {};
+  
+  document.getElementById('prof-input-name').value = data.name || '';
+  document.getElementById('prof-input-phone').value = data.phone || '';
+  document.getElementById('prof-input-aadhar').value = data.aadhar || '';
+  
+  const addressList = document.getElementById('saved-addresses-list');
+  const addresses = data.addresses || [];
+  
+  if (addresses.length === 0) {
+    addressList.innerHTML = '<p style="font-size:0.8rem; color:#666;">कोई पता सेव नहीं है।</p>';
+  } else {
+    addressList.innerHTML = addresses.map((addr, index) => `
+      <div style="background:#f0f4f0; padding:10px; border-radius:8px; margin-bottom:5px; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center;">
+        <span>${addr}</span>
+        <button onclick="window.removeAddress(${index})" style="background:none; border:none; color:red; cursor:pointer;">🗑️</button>
+      </div>
+    `).join('');
+  }
+}
+
+window.addAddressFromInput = () => {
+  const addrInput = document.getElementById('prof-input-address');
+  const newAddr = addrInput.value.trim();
+  if (!newAddr) return alert("पता खाली नहीं हो सकता!");
+
+  db.ref('users/' + window.currentUser.uid + '/addresses').once('value').then(snap => {
+    const list = snap.val() || [];
+    list.push(newAddr);
+    db.ref('users/' + window.currentUser.uid).update({ 
+        addresses: list,
+        name: document.getElementById('prof-input-name').value,
+        phone: document.getElementById('prof-input-phone').value,
+        aadhar: document.getElementById('prof-input-aadhar').value
+    }).then(() => {
+      addrInput.value = '';
+      renderProfileUI();
+      showToast("✅ पता जोड़ दिया गया");
+    });
   });
+};
+
+window.removeAddress = (index) => {
+  db.ref('users/' + window.currentUser.uid + '/addresses').once('value').then(snap => {
+    let list = snap.val() || [];
+    list.splice(index, 1);
+    db.ref('users/' + window.currentUser.uid).update({ addresses: list }).then(() => renderProfileUI());
+  });
+};
+
+window.saveProfileData = () => {
+    const name = document.getElementById('prof-input-name').value;
+    const phone = document.getElementById('prof-input-phone').value;
+    const aadhar = document.getElementById('prof-input-aadhar').value;
+    
+    db.ref('users/' + window.currentUser.uid).update({ name, phone, aadhar }).then(() => {
+        alert("✅ जानकारी अपडेट हो गई");
+        window.closeProfileModal();
+    });
 };
 
 window.closeProfileModal = () => document.getElementById('profile-modal').style.display = 'none';
