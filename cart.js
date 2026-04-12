@@ -8,7 +8,7 @@ function addToCart(productId, quantity = 1) {
   const product = source.find(p => String(p.id) === String(productId));
   
   if (!product) return;
-  const existingItem = cart.find(item => item.id === productId);
+  const existingItem = cart.find(item => String(item.id) === String(productId));
   
   if (existingItem) {
     existingItem.quantity += quantity;
@@ -78,14 +78,14 @@ function renderCartItems() {
 }
 
 function removeFromCart(id) {
-  cart = cart.filter(item => item.id !== id);
+  cart = cart.filter(item => String(item.id) !== String(id));
   localStorage.setItem('cart', JSON.stringify(cart));
   updateCartCount();
   renderCartItems();
 }
 
 function changeQuantity(id, delta) {
-  const item = cart.find(item => item.id === id);
+  const item = cart.find(item => String(item.id) === String(id));
   if (item) {
     item.quantity += delta;
     if (item.quantity <= 0) {
@@ -122,7 +122,7 @@ window.applyCoupon = () => {
   renderCartItems();
 };
 
-document.getElementById('checkout').onclick = () => {
+function handleCheckout() {
   if (cart.length === 0) return;
 
   // ग्राहक की जानकारी इनपुट फील्ड से लें
@@ -201,9 +201,10 @@ document.getElementById('checkout').onclick = () => {
   // ऑर्डर भेजने के बाद कार्ट खाली करें
   cart = [];
   localStorage.removeItem('cart');
+  appliedDiscount = 0; // कूपन रिसेट करें
   updateCartCount();
   closeCart();
-};
+}
 
 window.payViaUPI = () => {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -257,6 +258,8 @@ function printInvoice() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('clear-cart').onclick = clearCart;
   document.getElementById('print-cart').onclick = printInvoice;
+  const checkoutBtn = document.getElementById('checkout');
+  if (checkoutBtn) checkoutBtn.onclick = handleCheckout;
   updateCartCount();
 });
 
