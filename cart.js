@@ -50,7 +50,7 @@ function renderCartItems() {
   
   container.innerHTML = cart.map(item => `
     <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
-      <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+      <img src="${item.image}" alt="${item.name}" loading="lazy" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee;">
       <div style="flex: 1;">
         <div style="font-weight: bold;">${item.name}</div>
         <div style="color: #666;">₹${item.price}</div>

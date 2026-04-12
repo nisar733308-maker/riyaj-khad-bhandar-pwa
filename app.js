@@ -89,7 +89,7 @@ function displayProducts(items) {
       <div class="product-card">
         ${bestSellerBadge}
         ${lowStockBadge}
-        <img src="${product.image}" alt="${product.name}" onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">
+        <img src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" onclick="window.openProductDetails('${product.id}')" style="cursor:pointer; background: #f0f0f0;">
         <h3 onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">${product.name}</h3>
         <div class="card-rating">${stars} <span style="font-size: 0.8rem; color: #666;">(${product.reviews ? product.reviews.length : 0})</span></div>
         <div class="stock-status ${statusClass}">${statusLabel}</div>
@@ -126,7 +126,7 @@ function openProductDetails(id) {
   ` : '';
 
   content.innerHTML = `
-    <img src="${product.image}" class="details-img">
+    <img src="${product.image}" class="details-img" decoding="async">
     <span class="details-badge">${product.category}</span>
     <span class="details-badge ${product.stockStatus === 'Limited' ? 'status-limited-bg' : ''}">
       ${product.stockStatus === 'Limited' ? '⚠️' : '✅'} स्टॉक: ${product.stockCount} बोरी
