@@ -13,14 +13,16 @@ var firebaseConfig = {
 
 // Translation Dictionary
 const translations = {
-  hi: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर" },
-  en: { shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register" },
-  bho: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं" }
+  hi: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट" },
+  en: { shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment" },
+  bho: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं" }
 };
 
 window.changeLanguage = (lang) => {
   localStorage.setItem('appLanguage', lang);
   applyTranslations(lang);
+  // पन्ने को दोबारा लोड करने की ज़रूरत नहीं, सीधे UI बदलें
+  if(typeof filterProducts === 'function') filterProducts();
 };
 
 function applyTranslations(lang) {
@@ -437,9 +439,22 @@ async function loginUser() {
   }
 }
 
+window.showRegistrationFields = () => {
+  document.getElementById('confirm-pass-container').style.display = 'block';
+  document.getElementById('real-reg-btn').style.display = 'block';
+  document.getElementById('reg-toggle-btn').style.display = 'none';
+  document.getElementById('auth-modal-title').innerText = '👤 नया अकाउंट बनाएं';
+};
+
 async function registerUser() {
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-password').value;
+  const confirmPassword = document.getElementById('auth-confirm-password').value;
+
+  if (password !== confirmPassword) {
+    alert('❌ दोनों पासवर्ड एक जैसे नहीं हैं!');
+    return;
+  }
 
   if (!email || !password || password.length < 6) {
     alert('कृपया वैध ईमेल और कम से कम 6 अंकों का पासवर्ड भरें।');

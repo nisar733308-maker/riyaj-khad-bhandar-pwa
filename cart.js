@@ -139,7 +139,7 @@ window.fetchCurrentLocation = () => {
   navigator.geolocation.getCurrentPosition(async (position) => {
     const { latitude, longitude } = position.coords;
     try {
-      // OpenStreetMap Nominatim API (Free) to reverse geocode
+      // पता ढूंढने के लिए API कॉल
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
       const data = await response.json();
       addressInput.value = data.display_name || `${latitude}, ${longitude}`;
@@ -250,7 +250,7 @@ window.payViaUPI = () => {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
-  window.open(`upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`, '_blank');
+  window.location.href = `upi://pay?pa=9936733308@upi&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
 };
 
 function printInvoice() {

@@ -18,15 +18,15 @@
 
   <header>
     <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
-    <div class="lang-selector" style="position: absolute; left: 15px; top: 15px;">
+    <div class="lang-selector" style="position: absolute; left: 15px; top: 15px; z-index: 10;">
       <select id="app-lang" onchange="window.changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; border: none; font-weight: bold; font-size: 0.8rem; background: rgba(255,255,255,0.9);">
         <option value="hi">हिन्दी</option>
         <option value="en">English</option>
         <option value="bho">भोजपुरी</option>
       </select>
     </div>
-    <h1 style="margin-bottom: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
-    <p>खाद और कृषि उत्पाद</p>
+    <h1 id="shop-title" style="margin-bottom: 10px; padding-top: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
+    <p id="shop-desc">खाद और कृषि उत्पाद</p>
     <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
       <button id="install-btn" style="display:none; padding:10px 15px; background:white; color:#2e7d32; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📲 इंस्टॉल करें</button>
       <button id="share-btn" style="padding:10px 15px; background:white; color:#1976d2; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📤 ऐप शेयर करें</button>
@@ -206,8 +206,13 @@
             <input type="password" id="auth-password" placeholder="पासवर्ड" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
             <span class="password-toggle" onclick="togglePasswordVisibility('auth-password')">👁️</span>
           </div>
+          <div id="confirm-pass-container" class="password-wrapper" style="display: none;">
+            <input type="password" id="auth-confirm-password" placeholder="पासवर्ड दोबारा डालें (रजिस्ट्रेशन के लिए)" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+            <span class="password-toggle" onclick="togglePasswordVisibility('auth-confirm-password')">👁️</span>
+          </div>
           <button class="save-btn" style="background:#2e7d32;" onclick="loginUser()">लॉगिन करें</button>
-          <button class="save-btn" style="background:#1976d2; margin-top:10px;" onclick="registerUser()">रजिस्टर करें</button>
+          <button id="reg-toggle-btn" class="save-btn" style="background:#1976d2; margin-top:10px;" onclick="showRegistrationFields()">नया अकाउंट बनाएं (Register)</button>
+          <button id="real-reg-btn" class="save-btn" style="background:#1976d2; margin-top:10px; display:none;" onclick="registerUser()">रजिस्टर करें</button>
           <p style="text-align:center; margin-top:15px; font-size:0.9rem;">
             <a href="#" onclick="resetPassword(); return false;" style="color:#1976d2;">पासवर्ड भूल गए?</a>
           </p>
@@ -230,7 +235,7 @@
   </div>
 
   <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
-    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.12</span>
+    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.13</span>
   </footer>
 
   <!-- Firebase SDK -->
