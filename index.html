@@ -18,6 +18,13 @@
 
   <header>
     <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
+    <div class="lang-selector" style="position: absolute; left: 15px; top: 15px;">
+      <select id="app-lang" onchange="window.changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; border: none; font-weight: bold; font-size: 0.8rem; background: rgba(255,255,255,0.9);">
+        <option value="hi">हिन्दी</option>
+        <option value="en">English</option>
+        <option value="bho">भोजपुरी</option>
+      </select>
+    </div>
     <h1 style="margin-bottom: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
     <p>खाद और कृषि उत्पाद</p>
     <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
@@ -115,7 +122,10 @@
         <div id="customer-input-fields">
           <input type="text" id="customer-name" placeholder="अपना पूरा नाम" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
           <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-          <input type="text" id="customer-address" placeholder="पूरा पता" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <div style="position: relative; display: flex; gap: 5px;">
+            <input type="text" id="customer-address" placeholder="पूरा पता" style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+            <button onclick="window.fetchCurrentLocation()" title="GPS से पता जोड़ें" style="padding: 10px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer;">📍</button>
+          </div>
           <input type="number" id="customer-aadhar" placeholder="आधार कार्ड नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
         </div>
         <div id="login-prompt-in-cart" style="text-align:center; margin-top:10px; display:none;">

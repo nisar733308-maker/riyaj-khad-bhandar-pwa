@@ -11,6 +11,34 @@ var firebaseConfig = {
   appId: "1:912749567277:web:6aa9a25e2556f9b87c1474"
 };
 
+// Translation Dictionary
+const translations = {
+  hi: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर" },
+  en: { shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register" },
+  bho: { shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं" }
+};
+
+window.changeLanguage = (lang) => {
+  localStorage.setItem('appLanguage', lang);
+  applyTranslations(lang);
+};
+
+function applyTranslations(lang) {
+  const t = translations[lang] || translations.hi;
+  const shopTitle = document.getElementById('shop-title');
+  const shopDesc = document.getElementById('shop-desc');
+  const cartCount = document.getElementById('cart-count');
+  const menuLogin = document.getElementById('menu-login');
+  
+  if(shopTitle) shopTitle.innerText = t.shopTitle;
+  if(shopDesc) shopDesc.innerText = t.shopDesc;
+  if(cartCount) cartCount.innerHTML = t.cart + " " + (cart.length || 0);
+  if(menuLogin) menuLogin.innerText = t.login;
+  
+  // Re-render products to update labels if needed
+  if(typeof filterProducts === 'function') filterProducts();
+}
+
 // Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -555,6 +583,10 @@ window.addEventListener('appinstalled', () => {
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
     if (!db) return;
+    
+    const savedLang = localStorage.getItem('appLanguage') || 'hi';
+    document.getElementById('app-lang').value = savedLang;
+    applyTranslations(savedLang);
     
     // सर्च बार पर क्लिक करने पर हिस्ट्री दिखाएं
     const searchInput = document.getElementById('search');

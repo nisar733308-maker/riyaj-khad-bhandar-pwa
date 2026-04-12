@@ -127,8 +127,38 @@ window.applyCoupon = () => {
   renderCartItems();
 };
 
+// GPS Location Function
+window.fetchCurrentLocation = () => {
+  const addressInput = document.getElementById('customer-address');
+  if (!navigator.geolocation) {
+    alert("❌ आपका ब्राउज़र लोकेशन सपोर्ट नहीं करता।");
+    return;
+  }
+  
+  addressInput.placeholder = "लोकेशन ढूंढ रहे हैं...";
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const { latitude, longitude } = position.coords;
+    try {
+      // OpenStreetMap Nominatim API (Free) to reverse geocode
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+      const data = await response.json();
+      addressInput.value = data.display_name || `${latitude}, ${longitude}`;
+    } catch (e) {
+      addressInput.value = `${latitude}, ${longitude}`;
+    }
+  }, (err) => {
+    alert("❌ लोकेशन नहीं मिल पाई। कृपया सेटिंग में GPS चालू करें।");
+    addressInput.placeholder = "पूरा पता";
+  });
+};
+
 function handleCheckout() {
   if (cart.length === 0) return;
+  if (!window.currentUser) {
+    alert("❌ ऑर्डर करने के लिए पहले लॉगिन करना अनिवार्य है।");
+    window.openAuthModal();
+    return;
+  }
 
   // ग्राहक की जानकारी इनपुट फील्ड से लें
   const customerName = document.getElementById('customer-name').value;
@@ -212,6 +242,11 @@ function handleCheckout() {
 }
 
 window.payViaUPI = () => {
+  if (!window.currentUser) {
+    alert("❌ पेमेंट करने के लिए पहले लॉगिन करना अनिवार्य है।");
+    window.openAuthModal();
+    return;
+  }
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
