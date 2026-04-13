@@ -238,9 +238,8 @@ window.payViaUPI = () => {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
-  // PhonePe Fix: Adding mode and purpose for better deep-linking
-  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR&mode=02&purpose=00`;
-  window.location.href = upiUrl;
+  
+IL:  dow.location.href = upiUrl;
 };
 
 window.showPaymentQR = () => {
@@ -248,9 +247,8 @@ window.showPaymentQR = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return alert("कार्ट खाली है!");
   
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR&mode=02&purpose=00`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
-  const qrContainer = document.getElementById('qr-payment-container');
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20from%20Riyaj%20Store&am=${total}&cu=INR`;
+  
   
   qrContainer.innerHTML = `
     <div style="text-align:center; padding:15px; background:#fff; border:2px solid #673ab7; border-radius:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top:10px;">

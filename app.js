@@ -349,11 +349,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (installBtn) installBtn.style.display = 'block';
 });
 
-window.addEventListener('appinstalled', () => {
-  if (installBtn) installBtn.style.display = 'none';
-  installPrompt = null;
-});
-
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
 if (isIOS && !window.navigator.standalone) {
   setTimeout(() => {
@@ -375,11 +370,14 @@ if (isMiBrowser && !window.matchMedia('(display-mode: standalone)').matches) {
 }
 
 installBtn.addEventListener('click', async () => {
-  if (!installPrompt) return;
-  const result = await installPrompt.prompt();
-  console.log(`Install prompt was: ${result.outcome}`);
-  installPrompt = null;
-  installBtn.style.display = 'none';
+  if (installPrompt) {
+    const result = await installPrompt.prompt();
+    console.log(`Install prompt outcome: ${result.outcome}`);
+    installPrompt = null;
+  } else {
+    // अगर ब्राउज़र प्रॉम्प्ट नहीं दे रहा, तो मैन्युअल तरीका बताएं
+    alert("📲 ऐप इंस्टॉल करने के लिए:\n1. ऊपर या नीचे के 3-डॉट (⋮) मेनू पर क्लिक करें।\n2. 'Install App' या 'Add to Home Screen' चुनें।");
+  }
 });
 
 // Menu and UI Toggles
@@ -731,6 +729,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.matchMedia('(display-mode: standalone)').matches) {
         if(installBtn) installBtn.style.display = 'none';
     }
+
+    // बटन को हमेशा दिखाने के लिए (यूजर की मांग पर)
+    if(installBtn) installBtn.style.display = 'block';
 
     if (!db) {
         console.error("Firebase not initialized");
