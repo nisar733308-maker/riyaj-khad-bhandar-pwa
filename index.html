@@ -46,6 +46,7 @@
         <li id="menu-orders" onclick="openMyOrders(); toggleMenu()" style="display:none;">📦 मेरे ऑर्डर</li>
         <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()">🌙 डार्क मोड चालू करें</li>
         <li><a href="tel:9936733308" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px; width:100%;">📞 कॉल करें (Call Us)</a></li>
+        <li onclick="window.openFeedbackModal(); toggleMenu()">⭐ ऐप को रेटिंग दें</li>
         <li onclick="location.href='#about-section'; toggleMenu()">ℹ️ स्टोर की जानकारी</li>
         <li onclick="location.href='admin.html'">🛠️ एडमिन पैनल</li>
         <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;">👋 लॉगआउट</li>
@@ -113,31 +114,13 @@
         <span class="close" onclick="closeCart()">&times;</span>
       </div>
       <div class="modal-body" id="cart-items"></div>
-      <div id="customer-details-section" style="padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px;">
-        <div id="logged-in-user-info" style="display:none; background:#e8f5e9; padding:15px; border-radius:8px; border-left:5px solid #2e7d32;">
-          <p><strong>👤 नाम:</strong> <span id="display-name"></span></p>
-          <p><strong>📞 मोबाइल:</strong> <span id="display-phone"></span></p>
-          <p><strong>🏠 पता:</strong> <span id="display-address"></span></p>
-          <p><strong>🆔 आधार:</strong> <span id="display-aadhar"></span></p>
-          <button onclick="editCustomerDetails()" style="background:#1976d2; color:white; border:none; padding:8px 12px; border-radius:5px; margin-top:10px; cursor:pointer; font-size:0.9rem;">विवरण बदलें</button>
-        </div>
-        <div id="customer-input-fields">
-          <input type="text" id="customer-name" placeholder="अपना पूरा नाम" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-          <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-          <div style="position: relative; display: flex; gap: 5px;">
-            <input type="text" id="customer-address" placeholder="पूरा पता" style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-            <button onclick="window.fetchCurrentLocation()" title="GPS से पता जोड़ें" style="padding: 10px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer;">📍</button>
-          </div>
-          <input type="number" id="customer-aadhar" placeholder="आधार कार्ड नंबर" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
-        </div>
-        <div id="login-prompt-in-cart" style="text-align:center; margin-top:10px; display:none;">
-          <p style="margin-bottom:10px;">ऑर्डर करने के लिए लॉगिन करें या विवरण भरें:</p>
-          <button class="auth-btn" onclick="openAuthModal()">👤 लॉगिन / रजिस्टर</button>
-        </div>
-        <div id="save-details-checkbox" style="display:none; margin-top:10px;">
-          <input type="checkbox" id="save-customer-details">
-          <label for="save-customer-details">यह जानकारी मेरे प्रोफाइल में सेव करें</label>
-        </div>
+      <div id="cart-profile-status" style="padding: 15px; margin: 10px 20px; border-radius: 8px; text-align: center; background: #fff3e0; display: none;">
+          <p style="color: #e65100; font-size: 0.9rem; margin-bottom: 8px;">⚠️ ऑर्डर के लिए प्रोफाइल पूरी करें</p>
+          <button onclick="window.openProfileModal(); window.closeCart();" style="background:#ef6c00; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">👤 प्रोफाइल भरें</button>
+      </div>
+      <div id="login-prompt-in-cart" style="text-align:center; padding: 15px; display:none;">
+          <p style="margin-bottom:10px;">ऑर्डर के लिए लॉगिन अनिवार्य है</p>
+          <button class="auth-btn" onclick="openAuthModal()">👤 लॉगिन करें</button>
       </div>
       <div class="modal-footer">
         <!-- कूपन कोड सेक्शन -->
@@ -253,8 +236,26 @@
     </div>
   </div>
 
+  <!-- Feedback Modal -->
+  <div id="feedback-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⭐ आपकी राय (Feedback)</h2>
+        <span class="close" onclick="window.closeFeedbackModal()">&times;</span>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <p>आपको हमारा ऐप कैसा लगा?</p>
+        <div class="star-rating" style="font-size: 2.5rem; color: #fbc02d; margin: 15px 0; cursor: pointer;">
+          <span onclick="window.setFeedbackRating(1)">☆</span><span onclick="window.setFeedbackRating(2)">☆</span><span onclick="window.setFeedbackRating(3)">☆</span><span onclick="window.setFeedbackRating(4)">☆</span><span onclick="window.setFeedbackRating(5)">☆</span>
+        </div>
+        <textarea id="feedback-text" placeholder="अपना सुझाव यहाँ लिखें..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; height:80px;"></textarea>
+        <button onclick="window.submitFeedback()" style="width:100%; margin-top:15px; padding:12px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">भेजें (Submit)</button>
+      </div>
+    </div>
+  </div>
+
   <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
-    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.14</span>
+    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.15</span>
   </footer>
 
   <!-- Firebase SDK -->

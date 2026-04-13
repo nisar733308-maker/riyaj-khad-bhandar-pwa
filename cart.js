@@ -171,7 +171,7 @@ async function handleCheckout() {
   }
 
   // यदि एक से अधिक पते हैं, तो पहला वाला चुनें (या बाद में आप यहाँ एक पॉपअप भी दिखा सकते हैं)
-  const customerAddress = userData.addresses[0]; 
+  const customerAddress = userData.addresses[userData.addresses.length - 1]; // सबसे नया पता लें
   const customerName = userData.name;
   const customerPhone = userData.phone;
   const customerAadhar = userData.aadhar;
@@ -181,21 +181,6 @@ async function handleCheckout() {
   const total = subtotal - (subtotal * appliedDiscount);
   
   const screenshotBase64 = document.getElementById('screenshot-base64').value;
-
-  // अगर यूजर लॉग इन है और उसने 'सेव करें' चेकबॉक्स पर टिक किया है, तो प्रोफाइल अपडेट करें
-  if (window.currentUser && document.getElementById('save-customer-details').checked) {
-    window.db.ref('users/' + window.currentUser.uid).set({
-      name: customerName,
-      phone: customerPhone,
-      address: customerAddress,
-      aadhar: customerAadhar,
-      email: window.currentUser.email // ईमेल भी सेव करें
-    }).then(() => {
-      console.log("User profile updated successfully!");
-    }).catch(error => {
-      console.error("Error updating user profile:", error);
-    });
-  }
 
   let message = `*नया ऑर्डर - रियाज अहमद खाद भंडार*%0A%0A`;
   message += `*नाम:* ${customerName}%0A`;
@@ -253,7 +238,9 @@ window.payViaUPI = () => {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
-  window.location.href = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
+  // PhonePe Fix: Adding mode and purpose for better deep-linking
+  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR&mode=02&purpose=00`;
+  window.location.href = upiUrl;
 };
 
 window.showPaymentQR = () => {
@@ -261,7 +248,7 @@ window.showPaymentQR = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return alert("कार्ट खाली है!");
   
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR`;
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&am=${total}&cu=INR&mode=02&purpose=00`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
   const qrContainer = document.getElementById('qr-payment-container');
   

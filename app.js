@@ -15,15 +15,15 @@ var firebaseConfig = {
 const translations = {
   hi: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", 
-    search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", qr: "🖼️ QR कोड", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद" 
+    search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", qr: "🖼️ QR कोड", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद", call: "📞 कॉल"
   },
   en: { 
     shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", 
-    search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", qr: "🖼️ QR Code", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print" 
+    search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", qr: "🖼️ QR Code", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print", call: "📞 Call"
   },
   bho: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", 
-    search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", qr: "🖼️ QR कोड", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची" 
+    search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", qr: "🖼️ QR कोड", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची", call: "📞 फोन करीं"
   }
 };
 
@@ -59,6 +59,40 @@ function applyTranslations(lang) {
   // Re-render products to update labels if needed
   if(typeof filterProducts === 'function') filterProducts();
 }
+
+// Feedback Logic
+let currentFeedbackRating = 0;
+window.openFeedbackModal = () => document.getElementById('feedback-modal').style.display = 'block';
+window.closeFeedbackModal = () => document.getElementById('feedback-modal').style.display = 'none';
+
+window.setFeedbackRating = (rating) => {
+  currentFeedbackRating = rating;
+  const stars = document.querySelectorAll('.star-rating span');
+  stars.forEach((s, i) => {
+    s.textContent = i < rating ? '★' : '☆';
+  });
+};
+
+window.submitFeedback = () => {
+  if (currentFeedbackRating === 0) return alert("कृपया स्टार रेटिंग चुनें।");
+  const text = document.getElementById('feedback-text').value;
+  
+  const feedbackData = {
+    rating: currentFeedbackRating,
+    comment: text,
+    user: window.currentUser ? window.currentUser.email : 'Guest',
+    date: new Date().toLocaleString()
+  };
+
+  db.ref('feedback').push(feedbackData).then(() => {
+    alert("✅ आपकी रेटिंग के लिए धन्यवाद!");
+    window.closeFeedbackModal();
+    // Reset stars
+    currentFeedbackRating = 0;
+    document.querySelectorAll('.star-rating span').forEach(s => s.textContent = '☆');
+    document.getElementById('feedback-text').value = '';
+  }).catch(e => alert("Error: " + e.message));
+};
 
 // Initialize Firebase
 if (!firebase.apps.length) {
@@ -312,16 +346,13 @@ const isMiBrowser = /MiuiBrowser/i.test(navigator.userAgent);
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   installPrompt = e;
-  
-  // बटन को दिखाने के लिए मजबूर करें यदि ऐप इंस्टॉल नहीं है
-  installBtn.style.display = 'block';
-  console.log("Install prompt ready and visible");
+  if (installBtn) installBtn.style.display = 'block';
 });
 
-// अगर ब्राउज़र ने पहले ही प्रॉम्प्ट रोक दिया है, तो भी बटन दिखाने की कोशिश करें
-if (!window.matchMedia('(display-mode: standalone)').matches && !installPrompt) {
-    setTimeout(() => { if(!installPrompt) installBtn.style.display = 'none'; }, 5000);
-}
+window.addEventListener('appinstalled', () => {
+  if (installBtn) installBtn.style.display = 'none';
+  installPrompt = null;
+});
 
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
 if (isIOS && !window.navigator.standalone) {
@@ -571,19 +602,18 @@ auth.onAuthStateChanged(async (user) => {
 
 // Profile Modal Logic
 window.openProfileModal = () => {
-  if (!window.currentUser) return;
+  if (!window.currentUser) return openAuthModal();
   renderProfileUI();
   document.getElementById('profile-modal').style.display = 'block';
 };
 
 async function renderProfileUI() {
   if (!window.currentUser) return;
-  const snapshot = await db.ref('users/' + window.currentUser.uid).once('value');
-  const data = snapshot.val() || {};
-  
-  document.getElementById('prof-input-name').value = data.name || '';
-  document.getElementById('prof-input-phone').value = data.phone || '';
-  document.getElementById('prof-input-aadhar').value = data.aadhar || '';
+  db.ref('users/' + window.currentUser.uid).on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    document.getElementById('prof-input-name').value = data.name || '';
+    document.getElementById('prof-input-phone').value = data.phone || '';
+    document.getElementById('prof-input-aadhar').value = data.aadhar || '';
   
   const addressList = document.getElementById('saved-addresses-list');
   const addresses = data.addresses || [];
@@ -598,6 +628,7 @@ async function renderProfileUI() {
       </div>
     `).join('');
   }
+  });
 }
 
 window.addAddressFromInput = () => {
@@ -696,6 +727,11 @@ window.addEventListener('appinstalled', () => {
 
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
+    // PWA Install check again
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        if(installBtn) installBtn.style.display = 'none';
+    }
+
     if (!db) {
         console.error("Firebase not initialized");
         // Fallback: If DB fails, show local products
