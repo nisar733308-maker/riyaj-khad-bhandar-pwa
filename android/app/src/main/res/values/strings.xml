@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Riyaj Khad Bhandar</string>
+    <string name="title_activity_main">Riyaj Khad Bhandar</string>
+    <string name="package_name">com.riyaj.khad.bhandar</string>
+    <string name="custom_url_scheme">com.riyaj.khad.bhandar</string>
+</resources>
