@@ -346,7 +346,8 @@ const isMiBrowser = /MiuiBrowser/i.test(navigator.userAgent);
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   installPrompt = e;
-  if (installBtn) installBtn.style.display = 'block';
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'block';
 });
 
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
