@@ -100,6 +100,8 @@ if (!firebase.apps.length) {
 }
 var db = firebase.database();
 var auth = firebase.auth();
+window.db = firebase.database();
+window.auth = firebase.auth();
 
 let currentProducts = [];
 let filteredProducts = [];
@@ -545,6 +547,7 @@ async function logoutUser() {
 
 // Firebase Auth State Listener
 auth.onAuthStateChanged(async (user) => {
+window.auth.onAuthStateChanged(async (user) => {
   if (user) {
     window.currentUser = user;
     // लॉगिन होने पर मेनू में 'मेरी प्रोफाइल' और 'लॉगआउट' दिखाएं
@@ -557,6 +560,7 @@ auth.onAuthStateChanged(async (user) => {
 
     // यूजर प्रोफाइल डेटा लोड करें
     db.ref('users/' + user.uid).on('value', (snapshot) => {
+    window.db.ref('users/' + user.uid).on('value', (snapshot) => {
       const userData = snapshot.val();
       if (userData) {
         document.getElementById('display-name').textContent = userData.name || '';
@@ -592,6 +596,7 @@ auth.onAuthStateChanged(async (user) => {
 
     console.log("User logged out");
     // लॉगआउट होने पर कार्ट में इनपुट फील्ड दिखाएं
+    // लॉगआउट होने पर UI रिसेट करें
     document.getElementById('logged-in-user-info').style.display = 'none';
     document.getElementById('customer-input-fields').style.display = 'flex';
     document.getElementById('login-prompt-in-cart').style.display = 'block';
@@ -609,6 +614,7 @@ window.openProfileModal = () => {
 async function renderProfileUI() {
   if (!window.currentUser) return;
   db.ref('users/' + window.currentUser.uid).on('value', (snapshot) => {
+  window.db.ref('users/' + window.currentUser.uid).on('value', (snapshot) => {
     const data = snapshot.val() || {};
     document.getElementById('prof-input-name').value = data.name || '';
     document.getElementById('prof-input-phone').value = data.phone || '';
