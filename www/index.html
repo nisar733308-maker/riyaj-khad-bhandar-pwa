@@ -299,25 +299,34 @@
   <script src="./app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        // पेज लोड होते ही तुरंत नया अपडेट चेक करें
-        reg.update();
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          // Check for updates every 1 minute
+          setInterval(() => { reg.update(); }, 60000);
 
-        // अगर पहले से ही कोई अपडेट डाउनलोड होकर बैठा है (Waiting state)
-        if (reg.waiting) {
-          document.getElementById('update-banner').style.display = 'block';
-        }
+          if (reg.waiting) {
+            document.getElementById('update-banner').style.display = 'block';
+          }
 
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            // अगर नया सर्विस वर्कर इंस्टॉल हो गया है और पहले से कोई कंट्रोलर मौजूद है (यानी यह अपडेट है)
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              document.getElementById('update-banner').style.display = 'block';
-            }
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                document.getElementById('update-banner').style.display = 'block';
+              }
+            });
           });
         });
-      }).catch(e => console.log('SW fail', e));
+      });
+
+      // Automatically reload when the new service worker takes over
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
 
     // जब नया वर्कर एक्टिवेट हो जाए, तो पेज को रीलोड करने का विकल्प दें
