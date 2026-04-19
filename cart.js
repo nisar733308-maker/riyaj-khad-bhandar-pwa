@@ -55,9 +55,7 @@ function renderCartItems() {
   
   container.innerHTML = cart.map(item => `
     <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
-      <img src="${item.image}" alt="${item.name}" loading="lazy"
-           onload="this.classList.add('loaded')"
-           style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee; transition: opacity 0.3s; opacity: 0;">
+      <img src="${item.image}" alt="${item.name}" loading="lazy" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee;">
       <div style="flex: 1;">
         <div style="font-weight: bold;">${item.name}</div>
         <div style="color: #666;">₹${item.price}</div>
@@ -166,29 +164,17 @@ async function handleCheckout() {
   const snapshot = await window.db.ref('users/' + window.currentUser.uid).once('value');
   const userData = snapshot.val();
 
-  if (!userData || !userData.name || !userData.phone) {
-    alert("❌ आपका प्रोफाइल अधूरा है। कृपया नाम और मोबाइल नंबर भरें।");
+  if (!userData || !userData.name || !userData.phone || !userData.addresses || userData.addresses.length === 0) {
+    alert("❌ आपका प्रोफाइल या पता अधूरा है। कृपया 'मेरी प्रोफाइल' में कम से कम एक पता जोड़ें।");
     window.openProfileModal();
     return;
   }
 
-  // पते की जांच (पुराना स्ट्रिंग फॉर्मेट या नया एरे फॉर्मेट)
-  let customerAddress = "";
-  if (userData.addresses && userData.addresses.length > 0) {
-    customerAddress = userData.addresses[userData.addresses.length - 1];
-  } else if (userData.address) {
-    customerAddress = userData.address;
-  }
-
-  if (!customerAddress) {
-    alert("❌ कृपया 'मेरी प्रोफाइल' में कम से कम एक पता जोड़ें।");
-    window.openProfileModal();
-    return;
-  }
-
+  // यदि एक से अधिक पते हैं, तो पहला वाला चुनें (या बाद में आप यहाँ एक पॉपअप भी दिखा सकते हैं)
+  const customerAddress = userData.addresses[userData.addresses.length - 1]; // सबसे नया पता लें
   const customerName = userData.name;
   const customerPhone = userData.phone;
-  const customerAadhar = userData.aadhar || "N/A";
+  const customerAadhar = userData.aadhar;
 
   const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -254,15 +240,7 @@ window.payViaUPI = () => {
   if(total === 0) return;
 
   const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20from%20Riyaj%20Store&am=${total}&cu=INR`;
-
-  // Mobile check for deep linking
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile) {
-    window.location.href = upiUrl;
-  } else {
-    alert("💻 आप डेस्कटॉप पर हैं। कृपया 'QR कोड' बटन दबाएं और अपने मोबाइल से स्कैन करें।");
-    window.showPaymentQR();
-  }
+  window.location.href = upiUrl;
 };
 
 window.showPaymentQR = () => {

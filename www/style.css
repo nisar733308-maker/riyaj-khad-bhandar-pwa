@@ -636,3 +636,51 @@ body.dark-mode header { background: #1b5e20; }
 body.dark-mode #cart-count { background: #1b2e1b; color: #81c784; }
 body.dark-mode .modal-header { background: #252525; border-color: #333; }
 body.dark-mode .modal-footer { background: #1e1e1e; border-color: #333; }
+
+/* Floating Scroll Arrows */
+.scroll-arrows {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+.scroll-arrows div {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-green);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.3s;
+  backdrop-filter: blur(5px);
+  border: 2px solid white;
+}
+
+.scroll-arrows div:hover {
+  background: rgba(46, 125, 50, 1);
+  transform: scale(1.1);
+}
+
+/* Optimization for images */
+.product-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background: #f0f0f0;
+  transition: filter 0.3s ease-in-out;
+  filter: blur(5px);
+}
+
+.product-card img.loaded {
+  filter: blur(0);
+}
