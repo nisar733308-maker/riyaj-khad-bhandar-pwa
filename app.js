@@ -98,6 +98,8 @@ window.submitFeedback = () => {
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
+var db = firebase.database();
+var auth = firebase.auth();
 window.db = firebase.database();
 window.auth = firebase.auth();
 
@@ -174,11 +176,18 @@ function displayProducts(items) {
     const statusLabel = isOutOfStock ? '🚫 स्टॉक खत्म' : (product.stockStatus === 'Limited' ? '⚠️ सीमित स्टॉक' : '✅ स्टॉक में उपलब्ध');
     const statusClass = isOutOfStock ? 'status-out-of-stock' : (product.stockStatus === 'Limited' ? 'status-limited' : 'status-in-stock');
 
+    const optimizedImg = product.image.includes('unsplash.com')
+      ? product.image.split('?')[0] + '?auto=format&fit=crop&q=60&w=400'
+      : product.image;
+
     return `
       <div class="product-card">
         ${bestSellerBadge}
         ${lowStockBadge}
-        <img src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" onclick="window.openProductDetails('${product.id}')" style="cursor:pointer; background: #f0f0f0;">
+        <img src="${optimizedImg}" alt="${product.name}" loading="lazy" decoding="async"
+             onload="this.classList.add('loaded')"
+             onclick="window.openProductDetails('${product.id}')"
+             style="cursor:pointer; background: #f0f0f0;">
         <h3 onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">${product.name}</h3>
         <div class="card-rating">${stars} <span style="font-size: 0.8rem; color: #666;">(${product.reviews ? product.reviews.length : 0})</span></div>
         <div class="stock-status ${statusClass}">${statusLabel}</div>
@@ -192,9 +201,15 @@ function displayProducts(items) {
 
 function openProductDetails(id) {
   const product = currentProducts.find(p => String(p.id) === String(id));
+  if (!product) return;
   const content = document.getElementById('product-details-content');
   const t = translations[currentLang] || translations.hi;
   const isOutOfStock = product.stockCount <= 0;
+
+  const optimizedImg = product.image.includes('unsplash.com')
+    ? product.image.split('?')[0] + '?auto=format&fit=crop&q=80&w=800'
+    : product.image;
+
   document.getElementById('modal-product-name').innerText = product.name;
   
   const reviewsHTML = product.reviews ? `
@@ -213,7 +228,7 @@ function openProductDetails(id) {
   ` : '';
 
   content.innerHTML = `
-    <img src="${product.image}" class="details-img" decoding="async">
+    <img src="${optimizedImg}" class="details-img" decoding="async" onload="this.classList.add('loaded')">
     <span class="details-badge">${product.category}</span>
     <span class="details-badge ${product.stockStatus === 'Limited' ? 'status-limited-bg' : ''}">
       ${product.stockStatus === 'Limited' ? '⚠️' : '✅'} स्टॉक: ${product.stockCount} बोरी
@@ -270,13 +285,18 @@ window.clearAllHistory = () => {
 
 // Combined Filter Logic (Search + Rating)
 function filterProducts() {
-  const term = document.getElementById('search').value.toLowerCase();
-  const minRating = Number(document.getElementById('rating-filter').value);
-  const sortType = document.getElementById('sort-filter').value;
-  const category = document.getElementById('category-filter').value;
+  const searchInput = document.getElementById('search');
+  if (!searchInput) return;
+  const term = searchInput.value.toLowerCase();
+  const ratingFilter = document.getElementById('rating-filter');
+  const minRating = ratingFilter ? Number(ratingFilter.value) : 0;
+  const sortFilter = document.getElementById('sort-filter');
+  const sortType = sortFilter ? sortFilter.value : 'none';
+  const categoryFilter = document.getElementById('category-filter');
+  const category = categoryFilter ? categoryFilter.value : 'all';
 
-  // सर्च हिस्ट्री छुपाएं जब ग्राहक टाइप करना शुरू करे
-  document.getElementById('search-history').style.display = 'none';
+  const historyDropdown = document.getElementById('search-history');
+  if (historyDropdown) historyDropdown.style.display = 'none';
 
   // 2 सेकंड रुकने के बाद सर्च शब्द सेव करें (Debounce)
   clearTimeout(searchTimeout);
@@ -421,20 +441,25 @@ if (localStorage.getItem('darkMode') === 'true') {
 
 // My Orders Logic
 window.openMyOrders = () => {
-  if (!window.currentUser) return;
+  if (!window.currentUser) {
+    alert("📜 ऑर्डर हिस्ट्री देखने के लिए कृपया पहले लॉगिन करें।");
+    openAuthModal();
+    return;
+  }
   
   const container = document.getElementById('my-orders-list');
-  container.innerHTML = '<p style="text-align:center;">लोड हो रहा है...</p>';
+  container.innerHTML = '<p style="text-align:center; padding:20px;">ऑर्डर लोड हो रहे हैं... 🔄</p>';
   document.getElementById('orders-modal').style.display = 'block';
 
-  window.db.ref('orders').once('value', (snapshot) => {
+  db.ref('orders').orderByChild('userId').equalTo(window.currentUser.uid).once('value', (snapshot) => {
     const data = snapshot.val();
-    const allOrders = data ? Object.values(data) : [];
-    // सिर्फ वर्तमान यूजर के ऑर्डर फिल्टर करें
-    const myOrders = allOrders.filter(o => o.userId === window.currentUser.uid).reverse();
+    const myOrders = data ? Object.values(data).reverse() : [];
 
     if (myOrders.length === 0) {
-      container.innerHTML = '<p style="text-align:center; padding:20px;">आपने अभी तक कोई ऑर्डर नहीं दिया है।</p>';
+      container.innerHTML = '<div style="text-align:center; padding:30px;">' +
+        '<p style="font-size:1.2rem; color:#666;">आपने अभी तक कोई ऑर्डर नहीं दिया है।</p>' +
+        '<button onclick="closeOrdersModal()" style="margin-top:15px; padding:10px 20px; background:#2e7d32; color:white; border:none; border-radius:8px;">अभी खरीदारी करें</button>' +
+        '</div>';
       return;
     }
 
@@ -559,15 +584,19 @@ window.auth.onAuthStateChanged(async (user) => {
     window.db.ref('users/' + user.uid).on('value', (snapshot) => {
       const userData = snapshot.val();
       if (userData) {
+        const primaryAddress = (userData.addresses && userData.addresses.length > 0)
+          ? userData.addresses[userData.addresses.length - 1]
+          : (userData.address || '');
+
         document.getElementById('display-name').textContent = userData.name || '';
         document.getElementById('display-phone').textContent = userData.phone || '';
-        document.getElementById('display-address').textContent = userData.address || '';
+        document.getElementById('display-address').textContent = primaryAddress;
         document.getElementById('display-aadhar').textContent = userData.aadhar || '';
         
         // कार्ट में भी प्री-फिल करें
         document.getElementById('customer-name').value = userData.name || '';
         document.getElementById('customer-phone').value = userData.phone || '';
-        document.getElementById('customer-address').value = userData.address || '';
+        document.getElementById('customer-address').value = primaryAddress;
         document.getElementById('customer-aadhar').value = userData.aadhar || '';
 
         document.getElementById('logged-in-user-info').style.display = 'block';
@@ -591,6 +620,7 @@ window.auth.onAuthStateChanged(async (user) => {
     document.getElementById('menu-logout').style.display = 'none';
 
     console.log("User logged out");
+    // लॉगआउट होने पर कार्ट में इनपुट फील्ड दिखाएं
     // लॉगआउट होने पर UI रिसेट करें
     document.getElementById('logged-in-user-info').style.display = 'none';
     document.getElementById('customer-input-fields').style.display = 'flex';
@@ -701,21 +731,33 @@ window.loadProductsFromFirebase = () => {
 };
 
 // Share App Logic
-if (shareBtn) {
-  shareBtn.addEventListener('click', async () => {
+window.shareApp = async () => {
+  const shareData = {
+    title: '🌾 रियाज अहमद खाद भंडार',
+    text: 'किसान भाइयों, अब घर बैठे खाद और कृषि उत्पाद ऑर्डर करें। रियाज अहमद खाद भंडार ऐप डाउनलोड करें!',
+    url: window.location.origin + window.location.pathname
+  };
+
+  try {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'रियाज अहमद खाद भंडार',
-          text: 'किसान भाइयों, अब घर बैठे खाद और कृषि उत्पाद ऑर्डर करें। रियाज अहमद खाद भंडार ऐप डाउनलोड करें!',
-          url: window.location.href // यह अपने आप नया GitHub लिंक ले लेगा
-        });
-      } catch (err) { console.log('Share failed or cancelled'); }
+      await navigator.share(shareData);
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('ऐप का लिंक कॉपी हो गया है! अब आप इसे व्हाट्सएप पर शेयर कर सकते हैं।');
+      throw new Error('Web Share not supported');
     }
-  });
+  } catch (err) {
+    // अगर शेयर फेल हो जाए या उपलब्ध न हो, तो क्लिपबोर्ड का उपयोग करें
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      window.showToast('✅ ऐप लिंक कॉपी हो गया है! अब आप इसे कहीं भी भेज सकते हैं।');
+    } catch (clipboardErr) {
+      // आखिरी रास्ता: मैन्युअल इनपुट दिखाना या अलर्ट
+      alert('ऐप लिंक: ' + shareData.url);
+    }
+  }
+};
+
+if (shareBtn) {
+  shareBtn.addEventListener('click', window.shareApp);
 }
 
 // इंस्टॉल होने के बाद बटन को पूरी तरह छुपाएं
