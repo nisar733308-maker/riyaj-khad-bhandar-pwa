@@ -250,11 +250,65 @@ window.logoutUser = () => {
 };
 
 window.resetPassword = () => {
-    const email = document.getElementById('auth-email').value;
+    const email = document.getElementById('auth-email').value.trim();
     if (!email) return alert("कृपया ईमेल भरें।");
     firebase.auth().sendPasswordResetEmail(email)
-        .then(() => alert("पासवर्ड रिसेट लिंक भेज दिया गया है।"))
-        .catch(e => alert(e.message));
+        .then(() => window.showToast("📧 पासवर्ड रिसेट लिंक आपके ईमेल पर भेज दिया गया है!"))
+        .catch(e => {
+            console.error(e);
+            alert("त्रुटि: " + e.message + "\n\nसुझाव: सुनिश्चित करें कि आपने Firebase Console में 'Email/Password' इनेबल किया है और आप इसे localhost या लाइव सर्वर पर चला रहे हैं।");
+        });
+};
+
+// --- Search History Logic (Amazon Style) ---
+const HISTORY_KEY = 'riyaj_search_history';
+
+function getSearchHistory() {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+}
+
+function saveToHistory(term) {
+    if (!term) return;
+    let history = getSearchHistory();
+    // डुप्लिकेट हटाएं और नया टर्म सबसे ऊपर जोड़ें, लिमिट 5 रखें
+    history = [term, ...history.filter(h => h !== term)].slice(0, 5);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function renderSearchHistory() {
+    const container = document.getElementById('search-history');
+    if (!container) return;
+    const history = getSearchHistory();
+    
+    if (history.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.innerHTML = history.map(term => `
+        <div class="search-history-item" onclick="window.applySearchHistory('${term}')">
+            <span>🕒 ${term}</span>
+            <span style="color:#999;" onclick="event.stopPropagation(); window.removeFromHistory('${term}')">✕</span>
+        </div>
+    `).join('') + '<button class="clear-history-btn" onclick="window.clearHistory()">सर्च हिस्ट्री साफ करें</button>';
+}
+
+window.applySearchHistory = (term) => {
+    const input = document.getElementById('search');
+    input.value = term;
+    input.dispatchEvent(new Event('input')); // फिल्टर ट्रिगर करें
+};
+
+window.removeFromHistory = (term) => {
+    let history = getSearchHistory();
+    history = history.filter(h => h !== term);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    renderSearchHistory();
+};
+
+window.clearHistory = () => {
+    localStorage.removeItem(HISTORY_KEY);
+    renderSearchHistory();
 };
 
 window.showRegistrationFields = () => {
