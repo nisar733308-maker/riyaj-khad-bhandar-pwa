@@ -107,11 +107,23 @@
 </head>
 <body>
   <div id="toast-container" class="toast-container"></div>
-  <header style="position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-    <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
-    <h1 id="shop-title" style="margin: 0; font-size: 1.4rem; letter-spacing: -0.5px;">🌾 रियाज अहमद खाद भंडार</h1>
-    <p id="shop-desc" style="margin: 2px 0 0 0; font-size: 0.8rem; opacity: 0.9;">महाराजगंज की भरोसेमंद कृषि दुकान</p>
+  <header style="position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div style="font-size: 2.5rem;">🌾</div>
+      <div style="text-align: left;">
+        <h1 id="shop-title" style="margin: 0; font-size: 1.6rem; color: #004831; text-transform: uppercase;">रियाज अहमद खाद भंडार</h1>
+        <p id="shop-desc" style="margin: 0; font-size: 0.85rem; color: #666; font-weight: 600;">Indian Farmers' Trusted Partner</p>
+      </div>
+    </div>
+    <div id="menu-btn" onclick="toggleMenu()" style="font-size: 2rem; cursor: pointer; color: #004831;">☰</div>
   </header>
+
+  <!-- IFFCO Style Hero Section -->
+  <div style="background: linear-gradient(rgba(0,72,49,0.8), rgba(0,72,49,0.8)), url('https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=1200'); background-size: cover; padding: 60px 20px; text-align: center; color: white;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 10px;">मिट्टी की जान, किसान की शान</h2>
+    <p style="font-size: 1.1rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">उच्च गुणवत्ता वाले यूरिया, डीएपी और पोटाश के साथ अपनी फसल की पैदावार बढ़ाएं। भारत के भरोसेमंद सहकारी मानकों के साथ।</p>
+    <button onclick="document.getElementById('products-container').scrollIntoView({behavior:'smooth'})" style="margin-top: 25px; padding: 12px 30px; background: #E0A92E; border: none; color: #004831; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase;">उत्पाद देखें</button>
+  </div>
 
   <!-- 3-Dots Side Menu -->
   <div id="side-menu" class="side-menu" onclick="toggleMenu()">

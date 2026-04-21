@@ -104,7 +104,16 @@ function renderProducts(productsList) {
     const container = document.getElementById('products-container');
     if (!container) return;
 
-    if (productsList.length === 0) {
+    // यदि लिस्ट खाली है, तो दोबारा चेक करें (Robustness)
+    if (!productsList || productsList.length === 0) {
+        if (window.currentProducts && window.currentProducts.length > 0) {
+            productsList = window.currentProducts;
+        } else if (typeof products !== 'undefined' && products.length > 0) {
+            productsList = products;
+        }
+    }
+
+    if (!productsList || productsList.length === 0) {
         container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">कोई सामान नहीं मिला।</div>';
         return;
     }
@@ -115,8 +124,9 @@ function renderProducts(productsList) {
                 <img src="${product.image || 'https://via.placeholder.com/400x300?text=Product'}" 
                      alt="${product.name}" 
                      loading="lazy"
+                     onload="this.classList.add('loaded')"
                      onerror="this.src='https://via.placeholder.com/400x300?text=Image+Error'"
-                     style="width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s;">
+                     style="width: 100%; height: 200px; object-fit: cover; transition: all 0.5s ease;">
                 ${product.stockCount <= 0 ? 
                     `<div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #d32f2f; z-index: 2;">स्टॉक खत्म</div>` : ''}
                 <span style="position: absolute; top: 12px; left: 12px; background: rgba(46, 125, 50, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; z-index: 1;">${product.category}</span>
