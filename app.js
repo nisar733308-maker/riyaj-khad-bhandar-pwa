@@ -1,4 +1,4 @@
-// app.js - रियाज अहमद खाद भंडार PWA की मुख्य लॉजिक फाइल
+// app.js - रियाज अहमद खाद भंडार PWA की मुख्य लॉजिक फाइल (GPS Fixed)
 
 // ग्लोबल स्टेट
 window.currentProducts = [];
@@ -103,7 +103,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// --- Product Detail Logic (IFFCO Style) ---
+// 🔥 GPS Location Fix - 100% Working!
+window.fetchCurrentLocation = () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                console.log("GPS Success:", lat, lng);
+                
+                // Reliable reverse geocoding (Nominatim)
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let address = 'GPS Location found';
+                        if (data.display_name) {
+                            address = data.display_name;
+                        } else if (data.address) {
+                            address = [
+                                data.address.road || '',
+                                data.address.neighbourhood || data.address.village || '',
+                                data.address.city || data.address.town || '',
+                                data.address.state || '',
+                                data.address.country || ''
+                            ].filter(Boolean).join(', ');
+                        }
+                        document.getElementById('prof-input-address').value = address;
+                        window.showToast("✅ GPS Address भरा गया: " + address.substring(0, 50));
+                    })
+                    .catch(err => {
+                        console.log("Reverse geo fail, using coords:", err);
+                        // Fallback to coordinates + simple address
+                        document.getElementById('prof-input-address').value = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)} - GPS Active`;
+                        window.showToast("📍 GPS Coordinates भरे गए");
+                    });
+            },
+            (error) => {
+                console.error("GPS Error:", error);
+                let msg = "GPS Error";
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        msg = "GPS permission deny करें";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        msg = "GPS signal weak";
+                        break;
+                    case error.TIMEOUT:
+                        msg = "GPS timeout - Try again";
+                        break;
+                }
+                window.showToast(msg);
+            },
+            { 
+                enableHighAccuracy: true, 
+                timeout: 20000, 
+                maximumAge: 60000 
+            }
+        );
+    } else {
+        window.showToast("Browser में GPS support नहीं");
+    }
+};
+
+// --- Product Detail Logic (IFFCO Style) ---  
 window.showProductDetails = (id) => {
     const source = (window.currentProducts && window.currentProducts.length > 0) ? window.currentProducts : (typeof products !== 'undefined' ? products : []);
     const product = source.find(p => String(p.id) === String(id));
@@ -545,3 +608,4 @@ window.showToast = (message) => {
         setTimeout(() => { toast.style.display = 'none'; }, 500);
     }, 3000);
 };
+
