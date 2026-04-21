@@ -354,7 +354,8 @@ function printInvoice() {
     </head>
     <body>
       <div class="header">
-        <img src="./new-icon-192.png" alt="Logo" class="logo" style="width:80px; height:80px; border-radius:12px; margin-bottom:10px; object-fit:cover;">
+        <img src="./new-icon-192.png" alt="Logo" class="logo" style="width:80px; height:80px; border-radius:12px; margin-bottom:5px; object-fit:cover;">
+        <img src="./new-icon-512.png" alt="Website Logo" style="width:60px; height:60px; border-radius:8px; margin-top:5px; object-fit:cover; display:block; margin:0 auto;">
         <h1>रियाज अहमद खाद भंडार</h1>
         <div class="shop-info">
           <p><strong>प्रो. रियाज अहमद</strong> | मोबाइल: 9936733308</p>
