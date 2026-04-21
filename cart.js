@@ -315,28 +315,41 @@ function printInvoice() {
   if (cart.length === 0) return;
   
   const printWindow = window.open('', '_blank');
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal - (subtotal * appliedDiscount);
   const date = new Date().toLocaleDateString('hi-IN');
+  
+  // UPI QR Code for Invoice
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20Payment&am=${total}&cu=INR`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUri)}`;
 
   let invoiceHTML = `
     <html>
     <head>
       <title>रसीद - रियाज अहमद खाद भंडार</title>
       <style>
-        body { font-family: 'Arial', sans-serif; padding: 20px; line-height: 1.6; }
-        .header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; line-height: 1.6; color: #333; }
+        .header { text-align: center; border-bottom: 3px solid #2e7d32; padding-bottom: 15px; margin-bottom: 25px; }
+        .logo { width: 80px; height: 80px; margin-bottom: 10px; border-radius: 50%; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .total { text-align: right; font-size: 1.5rem; font-weight: bold; color: #2e7d32; }
-        .footer { text-align: center; margin-top: 50px; font-size: 0.9rem; color: #666; }
+        th { background-color: #e8f5e9; color: #2e7d32; }
+        .invoice-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; }
+        .qr-section { text-align: center; border: 1px solid #eee; padding: 10px; border-radius: 10px; }
+        .total-box { text-align: right; font-size: 1.3rem; font-weight: bold; color: #2e7d32; }
+        .shop-info { font-size: 0.9rem; color: #555; }
+        @media print { .no-print { display: none; } }
       </style>
     </head>
     <body>
       <div class="header">
+        <img src="./new-icon-192.png" alt="Logo" class="logo" onerror="this.style.display='none'">
         <h1>रियाज अहमद खाद भंडार</h1>
-        <p>प्रो. रियाज अहमद | मोबाइल: 9936733308</p>
-        <p>दिनांक: ${date}</p>
+        <div class="shop-info">
+          <p>प्रो. रियाज अहमद | मोबाइल: 9936733308</p>
+          <p>इलाहवास, बहादुरी बाजार, महाराजगंज (U.P.)</p>
+          <p><strong>दिनांक:</strong> ${date}</p>
+        </div>
       </div>
       <table>
         <thead><tr><th>उत्पाद</th><th>दर</th><th>मात्रा</th><th>कुल</th></tr></thead>
@@ -344,8 +357,23 @@ function printInvoice() {
           ${cart.map(item => `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.quantity}</td><td>₹${(item.price * item.quantity).toLocaleString()}</td></tr>`).join('')}
         </tbody>
       </table>
-      <div class="total">कुल राशि: ₹${total.toLocaleString()}</div>
-      <div class="footer"><p>हमारे यहाँ आने के लिए धन्यवाद! हम आपके उज्ज्वल भविष्य की कामना करते हैं।</p></div>
+      
+      <div class="invoice-footer">
+        <div class="qr-section">
+          <img src="${qrUrl}" alt="Payment QR">
+          <p style="font-size: 0.7rem; margin-top: 5px;">भुगतान के लिए स्कैन करें</p>
+        </div>
+        <div class="total-box">
+          ${appliedDiscount > 0 ? `<p style="font-size: 0.9rem; color: red; margin-bottom: 5px;">छूट: -₹${(subtotal * appliedDiscount).toLocaleString()}</p>` : ''}
+          कुल राशि: ₹${total.toLocaleString()}
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px;">
+        <p>🌸 हमारे यहाँ आने के लिए धन्यवाद! 🌸</p>
+      </div>
+      <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #2e7d32; color: white; border: none; border-radius: 5px; cursor: pointer;">Print Receipt</button>
+      </div>
     </body></html>`;
 
   printWindow.document.write(invoiceHTML);

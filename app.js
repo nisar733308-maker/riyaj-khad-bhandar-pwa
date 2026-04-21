@@ -55,7 +55,9 @@ function applyTranslations(lang) {
   if(document.getElementById('btn-continue-text')) document.getElementById('btn-continue-text').innerText = t.continue;
   if(document.getElementById('clear-cart')) document.getElementById('clear-cart').innerText = t.clear;
   if(document.getElementById('print-cart')) document.getElementById('print-cart').innerText = t.print;
-  if(document.getElementById('menu-update')) document.getElementById('menu-update').innerText = t.update;
+  
+  const menuUpdate = document.getElementById('menu-update');
+  if(menuUpdate) menuUpdate.innerHTML = `<span class="icon">🔄</span> ${t.update}`;
   
   // Re-render products to update labels if needed
   if(typeof filterProducts === 'function') filterProducts();
@@ -112,7 +114,6 @@ const shareBtn = document.getElementById('share-btn');
 
 window.currentUser = null; // ग्लोबल एक्सेस के लिए window.currentUser का उपयोग करें
 
-// Custom Toast Function
 window.showToast = (message) => {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -333,11 +334,10 @@ document.getElementById('rating-filter').addEventListener('change', filterProduc
 document.getElementById('sort-filter').addEventListener('change', filterProducts);
 
 document.getElementById('clear-filters-btn').addEventListener('click', () => {
-  document.getElementById('search').value = '';
-  document.getElementById('rating-filter').value = '0';
-  document.getElementById('sort-filter').value = 'none';
-  // सभी फिल्टर हटाने के बाद लिस्ट को रिफ्रेश करें
-  filterProducts();
+    document.getElementById('search').value = '';
+    document.getElementById('rating-filter').value = '0';
+    document.getElementById('sort-filter').value = 'none';
+    filterProducts();
 });
 
 // हिस्ट्री पर क्लिक करने पर सर्च अप्लाई करें
@@ -355,24 +355,22 @@ window.deleteHistoryItem = (term) => {
 };
 
 // चेक करें कि क्या ऐप पहले से इंस्टॉल है
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-  console.log("App detected as already installed");
-  if(installBtn) installBtn.style.display = 'none';
-}
+const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
 // PWA Install Logic
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isMiBrowser = /MiuiBrowser/i.test(navigator.userAgent);
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  installPrompt = e;
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.style.display = 'block';
+    e.preventDefault();
+    installPrompt = e;
+    if (installBtn && !isInstalled) {
+        installBtn.style.display = 'inline-block';
+    }
 });
 
 // iPhone के लिए विशेष संदेश (यदि इंस्टॉल नहीं है)
-if (isIOS && !window.navigator.standalone) {
+if (isIOSDevice && !window.navigator.standalone) {
   setTimeout(() => {
     const iosNote = document.createElement('div');
     iosNote.style = "background:#fff9c4; padding:10px; text-align:center; font-size:0.8rem; border-bottom:1px solid #fbc02d;";
@@ -391,16 +389,17 @@ if (isMiBrowser && !window.matchMedia('(display-mode: standalone)').matches) {
   }, 3000);
 }
 
-installBtn.addEventListener('click', async () => {
-  if (installPrompt) {
-    const result = await installPrompt.prompt();
-    console.log(`Install prompt outcome: ${result.outcome}`);
-    installPrompt = null;
-  } else {
-    // अगर ब्राउज़र प्रॉम्प्ट नहीं दे रहा, तो मैन्युअल तरीका बताएं
-    alert("📲 ऐप इंस्टॉल करने के लिए:\n1. ऊपर या नीचे के 3-डॉट (⋮) मेनू पर क्लिक करें।\n2. 'Install App' या 'Add to Home Screen' चुनें।");
-  }
-});
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (installPrompt) {
+            const result = await installPrompt.prompt();
+            console.log(`Install prompt outcome: ${result.outcome}`);
+            installPrompt = null;
+        } else {
+            alert("📲 ऐप इंस्टॉल करने के लिए:\n1. ब्राउज़र के मेनू (⋮) पर क्लिक करें।\n2. 'Install App' या 'Add to Home Screen' चुनें।");
+        }
+    });
+}
 
 // Menu and UI Toggles
 window.toggleMenu = () => {
@@ -590,6 +589,9 @@ window.auth.onAuthStateChanged(async (user) => {
     document.getElementById('menu-profile').style.display = 'block';
     document.getElementById('menu-orders').style.display = 'block';
     document.getElementById('menu-logout').style.display = 'block';
+    
+    const greeting = document.getElementById('menu-user-greeting');
+    if(greeting) greeting.innerText = user.email.split('@')[0];
     
     console.log("User logged in:", user.uid);
 
@@ -781,17 +783,12 @@ window.addEventListener('appinstalled', () => {
 
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
-    // PWA Install check again
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        if(installBtn) installBtn.style.display = 'none';
+    if (isInstalled && installBtn) {
+        installBtn.style.display = 'none';
     }
-
-    // बटन को हमेशा दिखाने के लिए (यूजर की मांग पर)
-    if(installBtn) installBtn.style.display = 'block';
 
     if (!db) {
         console.error("Firebase not initialized");
-        // Fallback: If DB fails, show local products
         if (typeof products !== 'undefined') {
             currentProducts = products;
             displayProducts(currentProducts);
