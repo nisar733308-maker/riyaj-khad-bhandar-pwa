@@ -110,24 +110,28 @@ function renderProducts(productsList) {
     }
 
     container.innerHTML = productsList.map(product => `
-        <div class="product-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s;">
-            <div style="position: relative;">
-                <img src="${product.image || 'https://via.placeholder.com/150'}" alt="${product.name}" 
-                     style="width: 100%; height: 180px; object-fit: cover;">
+        <div class="product-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.08); transition: all 0.3s ease; border: 1px solid #f0f0f0; position: relative; display: flex; flex-direction: column;">
+            <div style="position: relative; overflow: hidden;">
+                <img src="${product.image || 'https://via.placeholder.com/400x300?text=Product'}" 
+                     alt="${product.name}" 
+                     loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/400x300?text=Image+Error'"
+                     style="width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s;">
                 ${product.stockCount <= 0 ? 
-                    `<span style="position: absolute; top: 10px; right: 10px; background: #f44336; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">आउट ऑफ स्टॉक</span>` 
-                    : ''}
+                    `<div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #d32f2f; z-index: 2;">स्टॉक खत्म</div>` : ''}
+                <span style="position: absolute; top: 12px; left: 12px; background: rgba(46, 125, 50, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; z-index: 1;">${product.category}</span>
             </div>
-            <div style="padding: 15px;">
-                <span style="font-size: 0.75rem; color: #2e7d32; font-weight: bold; text-transform: uppercase;">${product.category}</span>
-                <h3 style="margin: 5px 0; font-size: 1.1rem; color: #333;">${product.name}</h3>
-                <p style="font-size: 0.85rem; color: #666; height: 40px; overflow: hidden; margin-bottom: 10px;">${product.desc || ''}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 1.2rem; font-weight: bold; color: #2e7d32;">₹${product.price}</span>
+            <div style="padding: 16px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1.15rem; color: #1a1a1a; font-weight: 700;">${product.name}</h3>
+                <p style="font-size: 0.85rem; color: #757575; line-height: 1.4; height: 3.8em; overflow: hidden; margin-bottom: 15px;">${product.desc || ''}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <div>
+                        <span style="font-size: 1.3rem; font-weight: 800; color: #2e7d32;">₹${product.price}</span>
+                    </div>
                     <button onclick="addToCart('${product.id}')" 
                             ${product.stockCount <= 0 ? 'disabled' : ''}
-                            style="background: #2e7d32; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                        ${product.stockCount <= 0 ? 'खत्म' : 'जोड़ें +'}
+                            style="background: ${product.stockCount <= 0 ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);">
+                        ${product.stockCount <= 0 ? 'खत्म' : '🛒 जोड़ें'}
                     </button>
                 </div>
             </div>
