@@ -171,7 +171,7 @@
     <div class="filter-group">
       <input id="search" placeholder="उत्पाद खोजें...">
       <div id="search-history" class="search-history-dropdown"></div>
-      <a href="#about-section" style="text-decoration:none; color:#2e7d32; font-weight:bold; font-size:0.9rem; align-self:center; margin:0 10px;">ℹ️ स्टोर जानकारी</a>
+      <!-- Store Info link removed - now in 3-dot menu -->
       <select id="category-filter">
         <option value="all">📁 सभी श्रेणियां</option>
         <option value="नाइट्रोजन खाद">नाइट्रोजन खाद</option>
@@ -209,20 +209,25 @@
     <div class="skeleton" style="height:300px;"></div>
   </main>
 
-  <!-- About Section -->
-  <section id="about-section" class="about-section">
-    <div class="about-container">
-      <h2>📍 हमारे स्टोर की जानकारी (About Us)</h2>
-      <div class="about-card">
-        <p><strong>👤 प्रोपराइटर:</strong> रियाज अहमद (RIYAJ AHMAD)</p>
-        <p><strong>🏠 पता:</strong> इलाहवास, बहादुरी बाजार, महाराजगंज, उत्तर प्रदेश, भारत</p>
-        <p><strong>📞 मोबाइल:</strong> <a href="tel:9936733308">9936733308</a></p>
-        <p><strong>📧 ईमेल:</strong> <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
-        <a href="tel:9936733308" class="call-btn" style="margin-top: 15px; padding: 12px; text-align: center; display: block; text-decoration: none;">📞 अभी कॉल करें (Call Now)</a>
-        <a href="https://www.google.com/maps/search/?api=1&query=Riyaj+Ahmad+Khad+Bhandar+Bahaduri+Bazar+Maharajganj" target="_blank" class="maps-btn">📍 दुकान का रास्ता देखें (Google Maps)</a>
+  <!-- About Info Modal (moved from page to 3-dot menu) -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>📍 स्टोर की जानकारी</h2>
+        <span class="close" onclick="closeAboutModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="about-card" style="text-align: left;">
+          <p><strong>👤 प्रोपराइटर:</strong> रियाज अहमद (RIYAJ AHMAD)</p>
+          <p><strong>🏠 पता:</strong> इलाहवास, बहादुरी बाजार, महाराजगंज, उत्तर प्रदेश, भारत</p>
+          <p><strong>📞 मोबाइल:</strong> <a href="tel:9936733308">9936733308</a></p>
+          <p><strong>📧 ईमेल:</strong> <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
+          <a href="tel:9936733308" class="call-btn" style="margin-top: 15px; padding: 12px; text-align: center; display: block; text-decoration: none;">📞 अभी कॉल करें</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Riyaj+Ahmad+Khad+Bhandar+Bahaduri+Bazar+Maharajganj" target="_blank" class="maps-btn">🗺️ Google Maps पर लोकेशन देखें</a>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
   <div id="cart-modal" class="modal">
     <div class="modal-content">
