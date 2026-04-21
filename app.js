@@ -467,6 +467,18 @@ window.toggleMenu = () => {
     if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 };
 
+// 🔥 Store Info - Added to Profile section as requested
+window.openAboutModal = () => {
+    const modal = document.getElementById('about-modal');
+    if (modal) modal.style.display = 'block';
+};
+
+window.closeAboutModal = () => {
+    const modal = document.getElementById('about-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+
 window.toggleDarkMode = () => {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
