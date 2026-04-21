@@ -16,15 +16,15 @@ const translations = {
   hi: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", 
     search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", qr: "🖼️ QR कोड", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद", call: "📞 कॉल"
-  },
+  , update: "🔄 अपडेट चेक करें"},
   en: { 
     shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", 
     search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", qr: "🖼️ QR Code", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print", call: "📞 Call"
-  },
+  , update: "🔄 Check Update"},
   bho: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", 
     search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", qr: "🖼️ QR कोड", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची", call: "📞 फोन करीं"
-  }
+  , update: "🔄 अपडेट देखीं"}
 };
 
 let currentLang = localStorage.getItem('appLanguage') || 'hi';
@@ -55,6 +55,7 @@ function applyTranslations(lang) {
   if(document.getElementById('btn-continue-text')) document.getElementById('btn-continue-text').innerText = t.continue;
   if(document.getElementById('clear-cart')) document.getElementById('clear-cart').innerText = t.clear;
   if(document.getElementById('print-cart')) document.getElementById('print-cart').innerText = t.print;
+  if(document.getElementById('menu-update')) document.getElementById('menu-update').innerText = t.update;
   
   // Re-render products to update labels if needed
   if(typeof filterProducts === 'function') filterProducts();
@@ -169,7 +170,7 @@ function displayProducts(items) {
     const isOutOfStock = product.stockCount <= 0;
     
     const bestSellerBadge = isBestSeller ? '<span class="best-seller-badge">✨ बेस्ट सेलर</span>' : '';
-    const lowStockBadge = (product.stockCount > 0 && product.stockCount < 10) 
+    const lowStockBadge = (product.stockCount > 0 && product.stockCount <= 5) 
       ? '<span class="low-stock-badge">⚠️ स्टॉक कम है</span>' 
       : (isOutOfStock ? '<span class="out-of-stock-badge">🚫 स्टॉक खत्म</span>' : '');
     
@@ -185,7 +186,7 @@ function displayProducts(items) {
         ${bestSellerBadge}
         ${lowStockBadge}
         <img src="${optimizedImg}" alt="${product.name}" loading="lazy" decoding="async"
-             onload="this.classList.add('loaded')"
+             onload="this.style.opacity=1"
              onclick="window.openProductDetails('${product.id}')"
              style="cursor:pointer; background: #f0f0f0;">
         <h3 onclick="window.openProductDetails('${product.id}')" style="cursor:pointer;">${product.name}</h3>
@@ -214,11 +215,11 @@ function openProductDetails(id) {
   
   const reviewsHTML = product.reviews ? `
     <div class="reviews-section">
-      <h3 style="margin-bottom: 15px;">⭐ ग्राहक समीक्षाएं</h3>
+      <h4 style="margin-bottom: 10px;">⭐ ग्राहक समीक्षाएं</h4>
       ${product.reviews.map(r => `
-        <div class="review-card">
-          <div class="review-header">
-            <span>👤 ${r.user}</span>
+        <div class="review-card" style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:5px;">
+          <div class="review-header" style="display:flex; justify-content:space-between;">
+            <span style="font-weight:bold; font-size:0.8rem;">👤 ${r.user}</span>
             <span style="color: #fbc02d;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
           </div>
           <p style="font-size: 0.85rem; color: #666;">${r.text}</p>
@@ -416,6 +417,18 @@ window.togglePasswordVisibility = (inputId) => {
   } else {
     input.type = 'password';
     toggleIcon.textContent = '👁️';
+  }
+};
+
+// Check for App Updates logic
+window.checkForUpdate = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        registration.update();
+      }
+      window.location.reload();
+    });
   }
 };
 

@@ -4,11 +4,11 @@ let appliedDiscount = 0; // 0.10 means 10%
 
 function addToCart(productId, quantity = 1) {
   // currentProducts (Firebase वाला डेटा) से सामान ढूंढें
-  const source = (typeof currentProducts !== 'undefined' && currentProducts.length > 0) ? currentProducts : products;
+  const source = (typeof currentProducts !== 'undefined' && currentProducts.length > 0) ? currentProducts : (typeof products !== 'undefined' ? products : []);
   const product = source.find(p => String(p.id) === String(productId));
   
-  if (!product) return;
-  if (product.stockCount <= 0) {
+  if (!product) return console.error("Product not found:", productId);
+  if (product.stockCount !== undefined && product.stockCount <= 0) {
     if (window.showToast) window.showToast("❌ यह सामान अभी स्टॉक में नहीं है।");
     else alert("❌ यह सामान अभी स्टॉक में नहीं है।");
     return;
@@ -55,15 +55,15 @@ function renderCartItems() {
   
   container.innerHTML = cart.map(item => `
     <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
-      <img src="${item.image}" alt="${item.name}" loading="lazy"
+      <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" loading="lazy"
            onload="this.classList.add('loaded')"
            style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee; transition: opacity 0.3s; opacity: 0;">
       <div style="flex: 1;">
-        <div style="font-weight: bold;">${item.name}</div>
-        <div style="color: #666;">₹${item.price}</div>
+        <div style="font-weight: 600; color: #333;">${item.name}</div>
+        <div style="color: #2e7d32; font-weight: bold;">₹${item.price}</div>
       </div>
       <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">-</button>
+        <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f9f9f9; border-radius: 4px; cursor: pointer;">-</button>
         <span style="min-width: 20px; text-align: center;">${item.quantity}</span>
         <button onclick="changeQuantity('${item.id}', 1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
       </div>
@@ -196,24 +196,22 @@ async function handleCheckout() {
   
   const screenshotBase64 = document.getElementById('screenshot-base64').value;
 
-  let message = `*नया ऑर्डर - रियाज अहमद खाद भंडार*%0A%0A`;
-  message += `*नाम:* ${customerName}%0A`;
-  message += `*ग्राहक मोबाइल:* ${customerPhone}%0A`;
-  message += `*पता:* ${customerAddress}%0A`;
-  message += `*आधार:* ${customerAadhar}%0A%0A`;
+  let text = `*नया ऑर्डर - रियाज अहमद खाद भंडार*\n\n`;
+  text += `*नाम:* ${customerName}\n`;
+  text += `*मोबाइल:* ${customerPhone}\n`;
+  text += `*पता:* ${customerAddress}\n`;
+  text += `*आधार:* ${customerAadhar}\n\n`;
   
   cart.forEach(item => {
-    message += `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}%0A`;
+    text += `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}\n`;
   });
   if (appliedDiscount > 0) {
-    message += `%0A*छूट (10%):* -₹${subtotal * appliedDiscount}%0A`;
+    text += `\n*छूट (10%):* -₹${subtotal * appliedDiscount}\n`;
   }
-  if (screenshotBase64) {
-    message += `%0A%0A📸 *पेमेंट स्क्रीनशॉट अपलोड कर दिया गया है (Admin Panel में देखें)*`;
-  }
-  message += `%0A*कुल राशि: ₹${total.toLocaleString()}*`;
+  text += `\n*कुल राशि: ₹${total.toLocaleString()}*`;
+  if (screenshotBase64) text += `\n\n📸 *पेमेंट स्क्रीनशॉट अपलोड कर दिया गया है*`;
 
-  const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   window.open(whatsappUrl, '_blank');
 
   // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
