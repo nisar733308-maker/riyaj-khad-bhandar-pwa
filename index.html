@@ -415,27 +415,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-  <!-- 🔥 Firebase Initialization - FIX FOR LOGIN ERROR -->
-  <script>
-    // रियाज खाद भंडार PWA के लिए Firebase Config (User API Key)
-    const firebaseConfig = {
-      apiKey: "AIzaSyCssU0rVx9INImuarodfqZQYpPJLK7W62Q",
-      authDomain: "riyaj-khad-bhandar.firebaseapp.com",
-      databaseURL: "https://riyaj-khad-bhandar-default-rtdb.firebaseio.com/",
-      projectId: "riyaj-khad-bhandar",
-      storageBucket: "riyaj-khad-bhandar.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef123456"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    window.firebase = firebase;
-    window.db = firebase.database();
-    
-    console.log("✅ Firebase App initialized for रियाज अहमद खाद भंडार!");
-    console.log("🔥 Auth/Database ready. Login now works!");
-  </script>
+  <!-- 🔥 Perfect Firebase - Fixed Config -->
+  <script src="./firebaseConfig.js"></script>
 
   <script src="./products.js"></script>
   <script src="./cart.js"></script>
