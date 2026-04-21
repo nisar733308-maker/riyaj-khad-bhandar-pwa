@@ -99,6 +99,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// --- Product Detail Logic (IFFCO Style) ---
+window.showProductDetails = (id) => {
+    const source = (window.currentProducts && window.currentProducts.length > 0) ? window.currentProducts : (typeof products !== 'undefined' ? products : []);
+    const product = source.find(p => String(p.id) === String(id));
+    if (!product) return;
+
+    const modal = document.getElementById('product-modal');
+    const content = document.getElementById('product-details-content');
+    const title = document.getElementById('modal-product-name');
+
+    title.textContent = product.name;
+    content.innerHTML = `
+        <div class="product-detail-view" style="display: flex; flex-direction: column; gap: 20px;">
+            <img src="${product.image}" alt="${product.name}" class="details-img" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px;">
+            <div class="details-info">
+                <span class="details-badge" style="background: #e8f5e9; color: #004831; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">${product.category}</span>
+                <h2 style="margin: 15px 0 10px; color: #004831;">₹${product.price}</h2>
+                <p style="color: #555; line-height: 1.6; font-size: 1rem;">${product.desc}</p>
+                <button onclick="addToCart('${product.id}'); closeProductModal();" class="add-to-cart-btn" style="width: 100%; margin-top: 20px; background: #004831; color: white; padding: 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase;">🛒 कार्ट में जोड़ें</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'block';
+};
+
 // उत्पादों को स्क्रीन पर दिखाने का फंक्शन
 function renderProducts(productsList) {
     const container = document.getElementById('products-container');
@@ -119,7 +144,7 @@ function renderProducts(productsList) {
     }
 
     container.innerHTML = productsList.map(product => `
-        <div class="product-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.08); transition: all 0.3s ease; border: 1px solid #f0f0f0; position: relative; display: flex; flex-direction: column;">
+        <div class="product-card" onclick="showProductDetails('${product.id}')" style="cursor: pointer; background: #fff; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.3s ease; border: 1px solid #eee; border-top: 5px solid #004831; position: relative; display: flex; flex-direction: column;">
             <div style="position: relative; overflow: hidden;">
                 <img src="${product.image || 'https://via.placeholder.com/400x300?text=Product'}" 
                      alt="${product.name}" 
@@ -138,7 +163,7 @@ function renderProducts(productsList) {
                     <div>
                         <span style="font-size: 1.3rem; font-weight: 800; color: #2e7d32;">₹${product.price}</span>
                     </div>
-                    <button onclick="addToCart('${product.id}')" 
+                    <button onclick="event.stopPropagation(); addToCart('${product.id}')" 
                             ${product.stockCount <= 0 ? 'disabled' : ''}
                             style="background: ${product.stockCount <= 0 ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);">
                         ${product.stockCount <= 0 ? 'खत्म' : '🛒 जोड़ें'}
@@ -156,6 +181,11 @@ window.openCart = () => {
         modal.style.display = 'block';
         if (typeof renderCartItems === 'function') renderCartItems();
     }
+};
+
+window.closeProductModal = () => {
+    const modal = document.getElementById('product-modal');
+    if (modal) modal.style.display = 'none';
 };
 
 window.closeCart = () => {

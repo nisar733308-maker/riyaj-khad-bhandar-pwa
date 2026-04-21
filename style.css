@@ -311,6 +311,7 @@ nav {
   text-align: center;
   border: 1px solid #eee;
   border-top: 5px solid var(--primary-green);
+  position: relative;
 }
 
 .product-card:hover {

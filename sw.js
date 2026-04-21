@@ -1,4 +1,4 @@
-const CACHE_NAME = 'khad-v60-iffco-theme';
+const CACHE_NAME = 'khad-v61-full-corporate';
 const STATIC_CACHE = [
   './',
   './index.html',
