@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. Firebase Auth State Observer (Fix for Auth/Profile Sync)
-    if (typeof firebase !== 'undefined') {
+    // 6. Firebase Auth State Observer (Enhanced Fix)
+    if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged(user => {
             window.currentUser = user;
             updateAuthUI(user);
@@ -96,7 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetProfileUI();
             }
         });
+        console.log("🔥 Firebase Auth Observer active");
+    } else {
+        console.warn("⚠️ Firebase Auth not available - check initialization");
     }
+
 });
 
 // --- Product Detail Logic (IFFCO Style) ---
@@ -215,6 +219,13 @@ window.closeProfileModal = () => {
 
 // --- Authentication Functions (Fix for Auth Issues) ---
 window.loginUser = async () => {
+    // 🔥 Firebase Login Fix - Defensive Check
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        alert("❌ Firebase लोड नहीं हुआ। पेज रिफ्रेश करें।");
+        console.error("Firebase not loaded");
+        return;
+    }
+    
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-password').value;
     if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड भरें।");
@@ -227,7 +238,15 @@ window.loginUser = async () => {
     }
 };
 
+
 window.registerUser = async () => {
+    // 🔥 Firebase Register Fix - Defensive Check
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        alert("❌ Firebase लोड नहीं हुआ। पेज रिफ्रेश करें।");
+        console.error("Firebase not loaded");
+        return;
+    }
+    
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-password').value;
     const conf = document.getElementById('auth-confirm-password').value;
@@ -241,6 +260,7 @@ window.registerUser = async () => {
         alert("रजिस्ट्रेशन में त्रुटि: " + e.message);
     }
 };
+
 
 window.logoutUser = () => {
     if (confirm("क्या आप लॉगआउट करना चाहते हैं?")) {
