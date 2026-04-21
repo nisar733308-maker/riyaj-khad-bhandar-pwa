@@ -339,15 +339,20 @@ function renderAddressesList(addresses) {
     }
 }
 
-window.saveProfileData = async () => {
+window.saveProfileData = async (silent = false) => {
     if (!window.currentUser) return;
     const name = document.getElementById('prof-input-name').value.trim();
     const phone = document.getElementById('prof-input-phone').value.trim();
     const aadhar = document.getElementById('prof-input-aadhar').value.trim();
+    const address = document.getElementById('prof-input-address')?.value.trim();
+
     if (!name || !phone) return alert("कृपया नाम और मोबाइल नंबर भरें।");
     try {
-        await window.db.ref('users/' + window.currentUser.uid).update({ name, phone, aadhar });
-        window.showToast("✅ प्रोफाइल अपडेट हुई!");
+        const updateData = { name, phone, aadhar };
+        if (address) updateData.address = address; // एड्रेस को भी अपडेट में शामिल करें
+        
+        await window.db.ref('users/' + window.currentUser.uid).update(updateData);
+        if (!silent) window.showToast("✅ प्रोफाइल अपडेट हुई!");
     } catch (e) { alert("त्रुटि: " + e.message); }
 };
 

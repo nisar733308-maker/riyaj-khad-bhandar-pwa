@@ -135,8 +135,9 @@ window.applyCoupon = () => {
 
 // GPS Location Function
 window.fetchCurrentLocation = () => {
-  const addressInput = document.getElementById('customer-address');
-  if (!navigator.geolocation) {
+  // कार्ट और प्रोफाइल दोनों इनपुट को चेक करें
+  const addressInput = document.getElementById('customer-address') || document.getElementById('prof-input-address');
+  if (!navigator.geolocation || !addressInput) {
     alert("❌ आपका ब्राउज़र लोकेशन सपोर्ट नहीं करता।");
     return;
   }
@@ -146,9 +147,14 @@ window.fetchCurrentLocation = () => {
     const { latitude, longitude } = position.coords;
     try {
       // पता ढूंढने के लिए API कॉल
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`, {
+        headers: {
+          'Accept-Language': 'hi,en'
+        }
+      });
       const data = await response.json();
       addressInput.value = data.display_name || `${latitude}, ${longitude}`;
+      if (window.showToast) window.showToast("📍 लोकेशन मिल गई!");
     } catch (e) {
       addressInput.value = `${latitude}, ${longitude}`;
     }
@@ -180,8 +186,10 @@ async function handleCheckout() {
   let customerAddress = "";
   if (userData.addresses && userData.addresses.length > 0) {
     customerAddress = userData.addresses[userData.addresses.length - 1];
-  } else if (userData.address) {
-    customerAddress = userData.address;
+  } else {
+    // अगर DB में नहीं है, तो इनपुट फील्ड से चेक करें (प्रोफाइल या कार्ट)
+    const manualAddr = document.getElementById('prof-input-address')?.value || document.getElementById('customer-address')?.value;
+    customerAddress = userData.address || manualAddr || "";
   }
 
   if (!customerAddress) {
@@ -346,10 +354,10 @@ function printInvoice() {
     </head>
     <body>
       <div class="header">
-        <img src="new-icon-192.png" alt="Logo" class="logo" style="width:100px; height:100px; border-radius:15px; margin-bottom:10px;">
+        <img src="./new-icon-192.png" alt="Logo" class="logo" style="width:80px; height:80px; border-radius:12px; margin-bottom:10px; object-fit:cover;">
         <h1>रियाज अहमद खाद भंडार</h1>
         <div class="shop-info">
-          <p>प्रो. रियाज अहमद | मोबाइल: 9936733308</p>
+          <p><strong>प्रो. रियाज अहमद</strong> | मोबाइल: 9936733308</p>
           <p>इलाहवास, बहादुरी बाजार, महाराजगंज (U.P.)</p>
           <p><strong>दिनांक:</strong> ${date}</p>
         </div>
