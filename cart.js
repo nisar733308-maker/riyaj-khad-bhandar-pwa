@@ -251,7 +251,7 @@ window.payViaUPI = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
 
-  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20from%20Riyaj%20Store&am=${total}&cu=INR`;
+  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total}&cu=INR`;
 
   // Mobile check for deep linking
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -268,7 +268,7 @@ window.showPaymentQR = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return alert("कार्ट खाली है!");
   
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20from%20Riyaj%20Store&am=${total}&cu=INR`;
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
   const qrContainer = document.getElementById('qr-payment-container');
   if (!qrContainer) return;
@@ -320,7 +320,7 @@ function printInvoice() {
   const date = new Date().toLocaleDateString('hi-IN');
   
   // UPI QR Code for Invoice
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=Order%20Payment&am=${total}&cu=INR`;
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=InvoicePayment&am=${total}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUri)}`;
 
   let invoiceHTML = `

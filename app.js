@@ -16,15 +16,15 @@ const translations = {
   hi: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद और कृषि उत्पाद", cart: "🛒 कार्ट", login: "👤 लॉगिन / रजिस्टर", 
     search: "उत्पाद खोजें...", checkout: "✅ व्हाट्सएप ऑर्डर", pay: "💸 पेमेंट", qr: "🖼️ QR कोड", continue: "जारी रखें", clear: "🗑️ साफ", print: "🖨️ रसीद", call: "📞 कॉल"
-  , update: "🔄 अपडेट चेक करें"},
+  },
   en: { 
     shopTitle: "🌾 Riyaj Ahmad Fertilizer Store", shopDesc: "Fertilizer & Agri Products", cart: "🛒 Cart", login: "👤 Login / Register", 
     search: "Search products...", checkout: "✅ WhatsApp Order", pay: "💸 Payment", qr: "🖼️ QR Code", continue: "Continue Shopping", clear: "🗑️ Clear", print: "🖨️ Print", call: "📞 Call"
-  , update: "🔄 Check Update"},
+  },
   bho: { 
     shopTitle: "🌾 रियाज अहमद खाद भंडार", shopDesc: "खाद आउर खेती के सामान", cart: "🛒 झोरा", login: "👤 लॉगिन करीं", 
     search: "सामान खोजीं...", checkout: "✅ व्हाट्सएप भेजीं", pay: "💸 पइसा भेजीं", qr: "🖼️ QR कोड", continue: "जारी रखीं", clear: "🗑️ खाली", print: "🖨️ पर्ची", call: "📞 फोन करीं"
-  , update: "🔄 अपडेट देखीं"}
+  }
 };
 
 let currentLang = localStorage.getItem('appLanguage') || 'hi';
@@ -55,9 +55,6 @@ function applyTranslations(lang) {
   if(document.getElementById('btn-continue-text')) document.getElementById('btn-continue-text').innerText = t.continue;
   if(document.getElementById('clear-cart')) document.getElementById('clear-cart').innerText = t.clear;
   if(document.getElementById('print-cart')) document.getElementById('print-cart').innerText = t.print;
-  
-  const menuUpdate = document.getElementById('menu-update');
-  if(menuUpdate) menuUpdate.innerHTML = `<span class="icon">🔄</span> ${t.update}`;
   
   // Re-render products to update labels if needed
   if(typeof filterProducts === 'function') filterProducts();
@@ -108,9 +105,6 @@ window.auth = firebase.auth();
 
 let currentProducts = [];
 let filteredProducts = [];
-let installPrompt;
-const installBtn = document.getElementById('install-btn');
-const shareBtn = document.getElementById('share-btn');
 
 window.currentUser = null; // ग्लोबल एक्सेस के लिए window.currentUser का उपयोग करें
 
@@ -416,18 +410,6 @@ window.togglePasswordVisibility = (inputId) => {
   } else {
     input.type = 'password';
     toggleIcon.textContent = '👁️';
-  }
-};
-
-// Check for App Updates logic
-window.checkForUpdate = () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      for (let registration of registrations) {
-        registration.update();
-      }
-      window.location.reload();
-    });
   }
 };
 
@@ -745,48 +727,8 @@ window.loadProductsFromFirebase = () => {
   });
 };
 
-// Share App Logic
-window.shareApp = async () => {
-  const shareData = {
-    title: '🌾 रियाज अहमद खाद भंडार',
-    text: 'किसान भाइयों, अब घर बैठे खाद और कृषि उत्पाद ऑर्डर करें। रियाज अहमद खाद भंडार ऐप डाउनलोड करें!',
-    url: window.location.origin + window.location.pathname
-  };
-
-  try {
-    if (navigator.share) {
-      await navigator.share(shareData);
-    } else {
-      throw new Error('Web Share not supported');
-    }
-  } catch (err) {
-    // अगर शेयर फेल हो जाए या उपलब्ध न हो, तो क्लिपबोर्ड का उपयोग करें
-    try {
-      await navigator.clipboard.writeText(shareData.url);
-      window.showToast('✅ ऐप लिंक कॉपी हो गया है! अब आप इसे कहीं भी भेज सकते हैं।');
-    } catch (clipboardErr) {
-      // आखिरी रास्ता: मैन्युअल इनपुट दिखाना या अलर्ट
-      alert('ऐप लिंक: ' + shareData.url);
-    }
-  }
-};
-
-if (shareBtn) {
-  shareBtn.addEventListener('click', window.shareApp);
-}
-
-// इंस्टॉल होने के बाद बटन को पूरी तरह छुपाएं
-window.addEventListener('appinstalled', () => {
-  console.log('PWA installed');
-  installBtn.style.display = 'none';
-});
-
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
-    if (isInstalled && installBtn) {
-        installBtn.style.display = 'none';
-    }
-
     if (!db) {
         console.error("Firebase not initialized");
         if (typeof products !== 'undefined') {

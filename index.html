@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>रियाज अहमद खाद भंडार</title>
-  <link rel="manifest" href="./manifest.json">
   <link rel="stylesheet" href="./style.css">
   <style>
     /* Professional Side Menu Styling */
@@ -108,21 +107,10 @@
 </head>
 <body>
   <div id="toast-container" class="toast-container"></div>
-
-  <!-- अपडेट नोटिफिकेशन बार -->
-  <div id="update-banner" style="display:none; background:#ff9800; color:white; text-align:center; padding:12px; position:fixed; top:0; width:100%; z-index:9999; font-weight:bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-    ✨ नया अपडेट उपलब्ध है! 
-    <button onclick="window.location.reload()" style="background:white; color:#ff9800; border:none; padding:5px 15px; border-radius:20px; font-weight:bold; cursor:pointer; margin-left:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">अभी अपडेट करें</button>
-  </div>
-
   <header>
     <div id="menu-btn" onclick="toggleMenu()" style="position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: white;">⋮</div>
     <h1 id="shop-title" style="margin-bottom: 10px; padding-top: 10px;">🌾 रियाज अहमद खाद भंडार</h1>
     <p id="shop-desc">खाद और कृषि उत्पाद</p>
-    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
-      <button id="install-btn" style="display:none; padding:10px 15px; background:white; color:#2e7d32; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📲 इंस्टॉल करें</button>
-      <button id="share-btn" style="padding:10px 15px; background:white; color:#1976d2; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 0.9rem;">📤 ऐप शेयर करें</button>
-    </div>
   </header>
 
   <!-- 3-Dots Side Menu -->
@@ -145,7 +133,6 @@
         <li id="menu-login" onclick="openAuthModal(); toggleMenu()"><span class="icon">🔑</span> लॉगिन / रजिस्टर</li>
         <li id="menu-profile" onclick="window.openProfileModal(); toggleMenu()" style="display:none;"><span class="icon">👤</span> मेरी प्रोफाइल</li>
         <li id="menu-orders" onclick="openMyOrders(); toggleMenu()"><span class="icon">📜</span> ऑर्डर हिस्ट्री</li>
-        <li id="menu-update" onclick="window.checkForUpdate(); toggleMenu()"><span class="icon">🔄</span> अपडेट चेक करें</li>
         <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()"><span class="icon">🌙</span> डार्क मोड</li>
         <li><a href="tel:9936733308"><span class="icon">📞</span> सहायता केंद्र (Call)</a></li>
         <li onclick="window.openFeedbackModal(); toggleMenu()"><span class="icon">⭐</span> ऐप रेटिंग</li>
@@ -153,7 +140,7 @@
         <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;"><span class="icon">👋</span> लॉगआउट</li>
       </ul>
       <div class="menu-footer-info">
-        वर्जन V 1.2.0<br>© 2024 रियाज अहमद खाद भंडार
+        © 2024 रियाज अहमद खाद भंडार | Online Store
       </div>
     </div>
   </div>
@@ -401,42 +388,5 @@
   <script src="./products.js"></script>
   <script src="./cart.js"></script>
   <script src="./app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-          // Check for updates every 1 minute
-          setInterval(() => { reg.update(); }, 60000);
-
-          if (reg.waiting) {
-            document.getElementById('update-banner').style.display = 'block';
-          }
-
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                document.getElementById('update-banner').style.display = 'block';
-              }
-            });
-          });
-        });
-      });
-
-      // Automatically reload when the new service worker takes over
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
-    }
-
-    // जब नया वर्कर एक्टिवेट हो जाए, तो पेज को रीलोड करने का विकल्प दें
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log("New version activated");
-    });
-  </script>
 </body>
 </html>
