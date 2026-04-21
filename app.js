@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // उत्पादों को स्क्रीन पर दिखाने का फंक्शन
 function renderProducts(productsList) {
-    const container = document.getElementById('product-grid');
+    const container = document.getElementById('products-container');
     if (!container) return;
 
     if (productsList.length === 0) {

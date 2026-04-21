@@ -1,3 +1,4 @@
+firm
 # PWA Fertilizer Shop Fixes - Urea/DAP/MOP Only + Install Fix
 
 **Final Cleanup - Moving to Pure PWA:**
