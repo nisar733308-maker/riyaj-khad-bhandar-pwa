@@ -696,12 +696,24 @@ body.dark-mode .modal-footer { background: #1e1e1e; border-color: #333; }
 .product-card img {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  object-fit: cover !important;
   background: #f0f0f0;
-  transition: filter 0.3s ease-in-out;
-  filter: blur(8px); /* Initial blur for smooth loading */
+  transition: all 0.5s ease;
+  filter: none; /* Sharp images everywhere */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .product-card img.loaded {
-  filter: blur(0);
+  filter: none;
+  transform: scale(1.02);
+}
+
+/* Mobile specific - High DPI sharp images */
+@media screen and (max-width: 768px) {
+  .product-card img {
+    height: 220px;
+    object-position: center;
+    image-rendering: pixelated;
+  }
 }
