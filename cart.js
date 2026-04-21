@@ -319,8 +319,7 @@ function printInvoice() {
   const total = subtotal - (subtotal * appliedDiscount);
   const date = new Date().toLocaleDateString('hi-IN');
   
-  // UPI QR Code for Invoice
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=InvoicePayment&am=${total}&cu=INR`;
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj Ahmad&tn=InvoicePayment&am=${total}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUri)}`;
 
   let invoiceHTML = `
@@ -343,7 +342,7 @@ function printInvoice() {
     </head>
     <body>
       <div class="header">
-        <img src="./new-icon-192.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+        <img src="new-icon-192.png" alt="Logo" class="logo" style="width:100px; height:100px; border-radius:15px; margin-bottom:10px;">
         <h1>रियाज अहमद खाद भंडार</h1>
         <div class="shop-info">
           <p>प्रो. रियाज अहमद | मोबाइल: 9936733308</p>
