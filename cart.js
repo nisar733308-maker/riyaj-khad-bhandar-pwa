@@ -24,9 +24,9 @@ function addToCart(productId, quantity = 1) {
   localStorage.setItem('cart', JSON.stringify(cart));
   updateCartCount();
   
-  // Simple feedback
-  if (window.event && window.event.target && window.event.target.tagName === 'BUTTON') {
-    const btn = window.event.target;
+  // Simple feedback (Robust way)
+  const btn = document.querySelector(`button[onclick="addToCart('${productId}')"]`);
+  if (btn) {
     const originalText = btn.textContent;
     btn.textContent = '✅ जोड़ा गया!';
     setTimeout(() => { btn.textContent = originalText; }, 1500);
@@ -55,9 +55,8 @@ function renderCartItems() {
   
   container.innerHTML = cart.map(item => `
     <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
-      <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" loading="lazy"
-           onload="this.classList.add('loaded')"
-           style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee; transition: opacity 0.3s; opacity: 0;">
+      <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" loading="lazy" 
+           style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee;">
       <div style="flex: 1;">
         <div style="font-weight: 600; color: #333;">${item.name}</div>
         <div style="color: #2e7d32; font-weight: bold;">₹${item.price}</div>

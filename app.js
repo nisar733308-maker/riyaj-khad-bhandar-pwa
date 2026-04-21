@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentProducts = typeof products !== 'undefined' ? products : [];
     renderProducts(window.currentProducts);
 
-    // 3. सर्च फंक्शनलिटी
-    const searchInput = document.getElementById('search-input');
+    // 3. सर्च फंक्शनलिटी (Corrected ID to 'search')
+    const searchInput = document.getElementById('search');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
@@ -29,22 +29,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. कैटेगरी फिल्टर
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    categoryBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            categoryBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            const category = btn.dataset.category;
-            if (category === 'all') {
-                renderProducts(window.currentProducts);
-            } else {
-                const filtered = window.currentProducts.filter(p => p.category === category);
-                renderProducts(filtered);
-            }
+    // 4. कैटेगरी और सॉर्ट फिल्टर (Corrected for <select> elements)
+    const categoryFilter = document.getElementById('category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', () => {
+            const category = categoryFilter.value;
+            const filtered = category === 'all' ? window.currentProducts : window.currentProducts.filter(p => p.category === category);
+            renderProducts(filtered);
         });
-    });
+    }
+
+    const ratingFilter = document.getElementById('rating-filter');
+    if (ratingFilter) {
+        ratingFilter.addEventListener('change', () => {
+            const minRating = parseInt(ratingFilter.value);
+            const filtered = window.currentProducts.filter(p => {
+                const avgRating = p.reviews && p.reviews.length > 0 ? p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length : 0;
+                return avgRating >= minRating;
+            });
+            renderProducts(filtered);
+        });
+    }
+
+    const sortFilter = document.getElementById('sort-filter');
+    if (sortFilter) {
+        sortFilter.addEventListener('change', () => {
+            const sortVal = sortFilter.value;
+            let sorted = [...window.currentProducts];
+            if (sortVal === 'low-high') sorted.sort((a, b) => a.price - b.price);
+            if (sortVal === 'high-low') sorted.sort((a, b) => b.price - a.price);
+            renderProducts(sorted);
+        });
+    }
+
+    const clearBtn = document.getElementById('clear-filters-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (categoryFilter) categoryFilter.value = 'all';
+            if (sortFilter) sortFilter.value = 'none';
+            if (ratingFilter) ratingFilter.value = '0';
+            renderProducts(window.currentProducts);
+        });
+    }
 
     // 5. Firebase से डेटा सिंक (यदि उपलब्ध हो)
     if (window.db) {

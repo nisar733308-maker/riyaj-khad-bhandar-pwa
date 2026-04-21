@@ -1,4 +1,4 @@
-const CACHE_NAME = 'khad-v53';
+const CACHE_NAME = 'khad-v55';
 const STATIC_CACHE = [
   './',
   './index.html',
