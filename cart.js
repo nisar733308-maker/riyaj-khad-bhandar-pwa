@@ -47,6 +47,11 @@ function renderCartItems() {
   const discountRow = document.getElementById('discount-row');
   const discountDisplay = document.getElementById('discount-amount');
 
+  // Authentication display logic
+  const loginPrompt = document.getElementById('login-prompt-in-cart');
+  if (loginPrompt) loginPrompt.style.display = window.currentUser ? 'none' : 'block';
+  // Note: 'logged-in-user-info' visibility is managed by loadUserProfile in app.js
+
   if (cart.length === 0) {
     container.innerHTML = '<p>कार्ट खाली है</p>';
     document.getElementById('total').textContent = '₹0';

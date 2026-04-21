@@ -83,6 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 6. Firebase Auth State Observer (Fix for Auth/Profile Sync)
+    if (typeof firebase !== 'undefined') {
+        firebase.auth().onAuthStateChanged(user => {
+            window.currentUser = user;
+            updateAuthUI(user);
+            if (user && window.db) {
+                loadUserProfile(user.uid);
+            } else {
+                // Reset UI for guest
+                resetProfileUI();
+            }
+        });
+    }
 });
 
 // उत्पादों को स्क्रीन पर दिखाने का फंक्शन
@@ -154,6 +168,231 @@ window.closeProfileModal = () => {
     const modal = document.getElementById('profile-modal');
     if (modal) modal.style.display = 'none';
 };
+
+// --- Authentication Functions (Fix for Auth Issues) ---
+window.loginUser = async () => {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-password').value;
+    if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड भरें।");
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, pass);
+        window.closeAuthModal();
+        window.showToast("✅ लॉगिन सफल!");
+    } catch (e) {
+        alert("लॉगिन में त्रुटि: " + e.message);
+    }
+};
+
+window.registerUser = async () => {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-password').value;
+    const conf = document.getElementById('auth-confirm-password').value;
+    if (!email || !pass) return alert("कृपया सभी फील्ड भरें।");
+    if (pass !== conf) return alert("पासवर्ड मेल नहीं खाते!");
+    try {
+        await firebase.auth().createUserWithEmailAndPassword(email, pass);
+        window.closeAuthModal();
+        window.showToast("✅ रजिस्ट्रेशन सफल!");
+    } catch (e) {
+        alert("रजिस्ट्रेशन में त्रुटि: " + e.message);
+    }
+};
+
+window.logoutUser = () => {
+    if (confirm("क्या आप लॉगआउट करना चाहते हैं?")) {
+        firebase.auth().signOut();
+        window.showToast("👋 लॉगआउट सफल!");
+    }
+};
+
+window.resetPassword = () => {
+    const email = document.getElementById('auth-email').value;
+    if (!email) return alert("कृपया ईमेल भरें।");
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => alert("पासवर्ड रिसेट लिंक भेज दिया गया है।"))
+        .catch(e => alert(e.message));
+};
+
+window.showRegistrationFields = () => {
+    document.getElementById('confirm-pass-container').style.display = 'block';
+    document.getElementById('real-reg-btn').style.display = 'block';
+    document.getElementById('reg-toggle-btn').style.display = 'none';
+    document.getElementById('auth-modal-title').textContent = '👤 नया अकाउंट रजिस्टर करें';
+};
+
+window.togglePasswordVisibility = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.type = el.type === 'password' ? 'text' : 'password';
+};
+
+// --- User Profile Logic (Fix for Saving Issues) ---
+function updateAuthUI(user) {
+    const loginBtn = document.getElementById('menu-login');
+    const profileBtn = document.getElementById('menu-profile');
+    const logoutBtn = document.getElementById('menu-logout');
+    const userGreeting = document.getElementById('menu-user-greeting');
+
+    if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (profileBtn) profileBtn.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'flex';
+        if (userGreeting) userGreeting.textContent = `नमस्ते, ${user.displayName || 'किसान भाई'}`;
+    } else {
+        if (loginBtn) loginBtn.style.display = 'flex';
+        if (profileBtn) profileBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userGreeting) userGreeting.textContent = `नमस्ते, किसान भाई`;
+    }
+}
+
+async function loadUserProfile(uid) {
+    if (!window.db) return;
+    window.db.ref('users/' + uid).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            if (document.getElementById('prof-input-name')) document.getElementById('prof-input-name').value = data.name || '';
+            if (document.getElementById('prof-input-phone')) document.getElementById('prof-input-phone').value = data.phone || '';
+            if (document.getElementById('prof-input-aadhar')) document.getElementById('prof-input-aadhar').value = data.aadhar || '';
+            
+            if (document.getElementById('display-name')) document.getElementById('display-name').textContent = data.name || '---';
+            if (document.getElementById('display-phone')) document.getElementById('display-phone').textContent = data.phone || '---';
+            if (document.getElementById('display-aadhar')) document.getElementById('display-aadhar').textContent = data.aadhar || '---';
+            
+            let lastAddr = "---";
+            if (data.addresses && data.addresses.length > 0) {
+                lastAddr = data.addresses[data.addresses.length - 1];
+                renderAddressesList(data.addresses);
+            } else if (data.address) lastAddr = data.address;
+            
+            if (document.getElementById('display-address')) document.getElementById('display-address').textContent = lastAddr;
+            if (data.name && document.getElementById('menu-user-greeting')) {
+                document.getElementById('menu-user-greeting').textContent = `नमस्ते, ${data.name}`;
+            }
+
+            // Cart Modal UI Sync
+            const statusDiv = document.getElementById('cart-profile-status');
+            const infoDiv = document.getElementById('logged-in-user-info');
+            if (data.name && data.phone && lastAddr !== "---") {
+                if (statusDiv) statusDiv.style.display = 'none';
+                if (infoDiv) infoDiv.style.display = 'block';
+            } else {
+                if (statusDiv) statusDiv.style.display = 'block';
+                if (infoDiv) infoDiv.style.display = 'none';
+            }
+        }
+    });
+}
+
+function renderAddressesList(addresses) {
+    const container = document.getElementById('saved-addresses-list');
+    if (container) {
+        container.innerHTML = addresses.map((a, i) => `
+            <div style="font-size:0.85rem; padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <span>📍 ${a}</span>
+                <button onclick="window.removeAddress(${i})" style="color:#f44336; background:none; border:none; cursor:pointer; font-weight:bold;">✖</button>
+            </div>
+        `).join('');
+    }
+}
+
+window.saveProfileData = async () => {
+    if (!window.currentUser) return;
+    const name = document.getElementById('prof-input-name').value.trim();
+    const phone = document.getElementById('prof-input-phone').value.trim();
+    const aadhar = document.getElementById('prof-input-aadhar').value.trim();
+    if (!name || !phone) return alert("कृपया नाम और मोबाइल नंबर भरें।");
+    try {
+        await window.db.ref('users/' + window.currentUser.uid).update({ name, phone, aadhar });
+        window.showToast("✅ प्रोफाइल अपडेट हुई!");
+    } catch (e) { alert("त्रुटि: " + e.message); }
+};
+
+window.addAddressFromInput = async () => {
+    if (!window.currentUser) return;
+    const addr = document.getElementById('prof-input-address').value.trim();
+    if (!addr) return;
+    const ref = window.db.ref('users/' + window.currentUser.uid + '/addresses');
+    const snap = await ref.once('value');
+    let list = snap.val() || [];
+    if (!Array.isArray(list)) list = [list];
+    list.push(addr);
+    await ref.set(list);
+    document.getElementById('prof-input-address').value = '';
+    window.showToast("✅ पता जोड़ दिया गया");
+};
+
+window.removeAddress = async (idx) => {
+    if (!window.currentUser || !confirm("क्या आप यह पता हटाना चाहते हैं?")) return;
+    const ref = window.db.ref('users/' + window.currentUser.uid + '/addresses');
+    const snap = await ref.once('value');
+    let list = snap.val() || [];
+    list.splice(idx, 1);
+    await ref.set(list);
+};
+
+function resetProfileUI() {
+    const inputs = ['prof-input-name', 'prof-input-phone', 'prof-input-aadhar', 'prof-input-address'];
+    inputs.forEach(id => { if (document.getElementById(id)) document.getElementById(id).value = ''; });
+    const texts = ['display-name', 'display-phone', 'display-address', 'display-aadhar'];
+    texts.forEach(id => { if (document.getElementById(id)) document.getElementById(id).textContent = '---'; });
+    if (document.getElementById('logged-in-user-info')) document.getElementById('logged-in-user-info').style.display = 'none';
+}
+
+// --- General App UI Functions ---
+window.toggleMenu = () => {
+    const menu = document.getElementById('side-menu');
+    if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+};
+
+window.toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+};
+
+window.openMyOrders = () => {
+    const modal = document.getElementById('orders-modal');
+    if (modal) { modal.style.display = 'block'; renderMyOrders(); }
+};
+
+async function renderMyOrders() {
+    const container = document.getElementById('my-orders-list');
+    if (!container || !window.currentUser || !window.db) return;
+    container.innerHTML = '<p style="text-align:center;">लोड हो रहा है...</p>';
+    try {
+        const snap = await window.db.ref('orders').orderByChild('userId').equalTo(window.currentUser.uid).once('value');
+        const orders = snap.val();
+        if (!orders) return container.innerHTML = '<p style="text-align:center; padding:20px;">कोई ऑर्डर नहीं मिला।</p>';
+        container.innerHTML = Object.values(orders).reverse().map(o => `
+            <div style="background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:10px; border-left:4px solid #2e7d32;">
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem;">
+                    <span>📅 ${o.date}</span><span style="color:#2e7d32;">₹${o.total.toLocaleString()}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#666; margin:5px 0;">${o.items.map(i => i.name).join(', ')}</div>
+            </div>
+        `).join('');
+    } catch (e) { container.innerHTML = "त्रुटि: " + e.message; }
+}
+
+window.openFeedbackModal = () => {
+    const modal = document.getElementById('feedback-modal');
+    if (modal) modal.style.display = 'block';
+};
+
+let currentRating = 0;
+window.setFeedbackRating = (n) => {
+    currentRating = n;
+    document.querySelectorAll('.star-rating span').forEach((s, i) => s.textContent = i < n ? '★' : '☆');
+};
+
+window.submitFeedback = async () => {
+    if (!currentRating) return alert("कृपया रेटिंग चुनें!");
+    const text = document.getElementById('feedback-text').value;
+    if (window.db) await window.db.ref('feedback').push({ rating: currentRating, text, user: window.currentUser ? window.currentUser.email : 'Guest' });
+    window.showToast("शुक्रिया! आपकी राय हमें मिल गई है।");
+    document.getElementById('feedback-modal').style.display = 'none';
+};
+
+window.changeLanguage = (lang) => { window.showToast("भाषा बदली गई: " + lang); };
 
 // टोस्ट नोटिफिकेशन
 window.showToast = (message) => {
