@@ -25,11 +25,13 @@ function addToCart(productId, quantity = 1) {
   updateCartCount();
   
   // Simple feedback (Robust way)
-  const btn = document.querySelector(`button[onclick="addToCart('${productId}')"]`);
-  if (btn) {
-    const originalText = btn.textContent;
-    btn.textContent = '✅ जोड़ा गया!';
-    setTimeout(() => { btn.textContent = originalText; }, 1500);
+  // querySelector को बेहतर बनाया गया है ताकि यह event.stopPropagation वाले बटनों को भी ढूंढ सके
+  const buttons = document.querySelectorAll('button');
+  const targetBtn = Array.from(buttons).find(b => b.getAttribute('onclick')?.includes(`addToCart('${productId}')`));
+  if (targetBtn) {
+    const originalText = targetBtn.innerHTML;
+    targetBtn.innerHTML = '✅ जोड़ा गया';
+    setTimeout(() => { targetBtn.innerHTML = originalText; }, 1500);
   }
 }
 
@@ -206,7 +208,7 @@ async function handleCheckout() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = subtotal - (subtotal * appliedDiscount);
   
-  const screenshotBase64 = document.getElementById('screenshot-base64').value;
+  const screenshotBase64 = document.getElementById('screenshot-base64')?.value;
 
   let text = `*नया ऑर्डर - रियाज अहमद खाद भंडार*\n\n`;
   text += `*नाम:* ${customerName}\n`;
@@ -215,13 +217,13 @@ async function handleCheckout() {
   text += `*आधार:* ${customerAadhar}\n\n`;
   
   cart.forEach(item => {
-    text += `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}\n`;
+    text += `• ${item.name} (x${item.quantity}) - ₹${(item.price * item.quantity).toLocaleString()}\n`;
   });
   if (appliedDiscount > 0) {
-    text += `\n*छूट (10%):* -₹${subtotal * appliedDiscount}\n`;
+    text += `\n*छूट (10%):* -₹${(subtotal * appliedDiscount).toLocaleString()}\n`;
   }
   text += `\n*कुल राशि: ₹${total.toLocaleString()}*`;
-  if (screenshotBase64) text += `\n\n📸 *पेमेंट स्क्रीनशॉट अपलोड कर दिया गया है*`;
+  if (screenshotBase64) text += `\n\n📸 _पेमेंट स्क्रीनशॉट पोर्टल पर अपलोड कर दिया गया है_`;
 
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   window.open(whatsappUrl, '_blank');

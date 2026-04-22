@@ -600,18 +600,16 @@ window.changeLanguage = (lang) => { window.showToast("भाषा बदली 
 
 // टोस्ट नोटिफिकेशन
 window.showToast = (message) => {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        document.body.appendChild(toast);
-    }
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
     toast.textContent = message;
-    toast.style.display = 'block';
-    toast.className = 'toast show';
-    setTimeout(() => { 
-        toast.className = 'toast';
-        setTimeout(() => { toast.style.display = 'none'; }, 500);
-    }, 3000);
+    container.appendChild(toast);
+    
+    // 2.5s बाद हटा दें (CSS एनीमेशन के साथ मेल खाता हुआ)
+    setTimeout(() => {
+        toast.remove();
+    }, 2500);
 };
-
