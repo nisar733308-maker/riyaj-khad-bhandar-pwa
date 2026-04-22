@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. शुरुआती डेटा लोड करना
     // products.js से डिफॉल्ट प्रोडक्ट्स लें
-    window.currentProducts = typeof products !== 'undefined' ? products : [];
+window.currentProducts = (typeof window !== 'undefined' && typeof window.products !== 'undefined') ? window.products : [];
     renderProducts(window.currentProducts);
 
     // 3. सर्च फंक्शनलिटी (Corrected ID to 'search')
