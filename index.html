@@ -1,32 +1,23 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>रियाज अहमद खाद भंडार</title>
-
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="./style.css" />
-
-  <!-- Preconnect for performance -->
-  <link rel="preconnect" href="https://images.unsplash.com">
-
+  <link rel="stylesheet" href="./style.css">
   <style>
-    :root {
-      --primary: #004831;
-      --accent: #E0A92E;
-    }
-
-    /* Side Menu */
+    /* Professional Side Menu Styling */
     .side-menu {
       position: fixed;
-      inset: 0;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,0.5);
-      display: none;
       z-index: 10000;
+      display: none;
       backdrop-filter: blur(4px);
     }
-
     .menu-content {
       position: absolute;
       right: 0;
@@ -36,194 +27,401 @@
       box-shadow: -5px 0 15px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
-      animation: slideIn .3s ease;
+      animation: slideInRight 0.3s ease-out;
     }
-
-    @keyframes slideIn {
+    @keyframes slideInRight {
       from { transform: translateX(100%); }
       to { transform: translateX(0); }
     }
-
-    .menu-list li {
-      padding: 14px 20px;
-      display: flex;
-      gap: 12px;
-      cursor: pointer;
-      border-bottom: 1px solid #f0f0f0;
+    .menu-header-prof {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      padding: 30px 20px;
+      color: white;
+      text-align: center;
     }
-
+    .menu-header-prof .profile-avatar {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 10px;
+      border: 2px solid rgba(255,255,255,0.5);
+    }
+    .menu-list {
+      list-style: none;
+      padding: 10px 0;
+      margin: 0;
+      overflow-y: auto;
+    }
+    .menu-list li {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 500;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
     .menu-list li:hover {
       background: #f1f8e9;
     }
-
+    .menu-list li .icon {
+      font-size: 1.2rem;
+      width: 25px;
+      text-align: center;
+    }
+    .menu-list li a {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+    }
     .dark-mode .menu-content {
       background: #1e1e1e;
-      color: #fff;
+      color: white;
     }
-
-    .hero {
-      background: linear-gradient(rgba(0,72,49,0.8), rgba(0,72,49,0.8)),
-      url('https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=1200');
-      background-size: cover;
-      padding: 60px 20px;
+    .dark-mode .menu-list li {
+      color: #eee;
+      border-color: #333;
+    }
+    .dark-mode .menu-list li:hover {
+      background: #333;
+    }
+    .menu-footer-info {
+      margin-top: auto;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: #999;
       text-align: center;
-      color: white;
-    }
-
-    .hero button {
-      padding: 14px 30px;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: var(--primary);
-      border: none;
-    }
-
-    .btn-outline {
-      border: 2px solid white;
-      background: transparent;
-      color: white;
+      border-top: 1px solid #eee;
     }
   </style>
 </head>
-
 <body>
+  <div id="toast-container" class="toast-container"></div>
+  <header style="position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div style="font-size: 2.5rem;">🌾</div>
+      <div style="text-align: left;">
+        <h1 id="shop-title" style="margin: 0; font-size: 1.6rem; color: #004831; text-transform: uppercase;">रियाज अहमद खाद भंडार</h1>
+        <p id="shop-desc" style="margin: 0; font-size: 0.85rem; color: #666; font-weight: 600;">Indian Farmers' Trusted Partner</p>
+      </div>
+    </div>
+    <div id="menu-btn" onclick="toggleMenu()" style="font-size: 2rem; cursor: pointer; color: #004831;">☰</div>
+  </header>
 
-<!-- Toast -->
-<div id="toast-container"></div>
-
-<!-- Header -->
-<header class="header">
-  <div class="header-left">
-    <span class="logo">🌾</span>
-    <div>
-      <h1 id="shop-title">रियाज अहमद खाद भंडार</h1>
-      <p id="shop-desc">Indian Farmers' Trusted Partner</p>
+  <!-- IFFCO Style Hero Section -->
+  <div style="background: linear-gradient(rgba(0,72,49,0.8), rgba(0,72,49,0.8)), url('https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=1200'); background-size: cover; padding: 60px 20px; text-align: center; color: white;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 15px; font-weight: 800;">मिट्टी की जान, किसान की शान</h2>
+    <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; opacity: 0.95;">रियाज अहमद खाद भंडार महाराजगंज के किसानों को उच्च गुणवत्ता वाले उर्वरक और बीज प्रदान करने के लिए प्रतिबद्ध है। हम सहकारी सिद्धांतों और गुणवत्तापूर्ण सेवा में विश्वास रखते हैं।</p>
+    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 30px;">
+      <button onclick="document.getElementById('products-container').scrollIntoView({behavior:'smooth'})" style="padding: 14px 35px; background: #E0A92E; border: none; color: #004831; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">अभी खरीदारी करें</button>
+      <button onclick="location.href='about.html'" style="padding: 14px 35px; background: transparent; border: 2px solid white; color: white; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase;">हमारे बारे में</button>
     </div>
   </div>
 
-  <button id="menu-btn" aria-label="Menu">☰</button>
-</header>
+  <!-- Corporate Commitment Section -->
+  <section style="background: #fff; padding: 40px 20px; text-align: center; border-bottom: 1px solid #eee;">
+    <h3 style="color: #004831; font-size: 1.8rem; margin-bottom: 10px;">हमारा संकल्प</h3>
+    <p style="color: #666; max-width: 600px; margin: 0 auto;">शुद्ध खाद, सही दाम और किसान का सम्मान। हम केवल उत्पाद नहीं, समृद्धि बेचते हैं।</p>
+  </section>
 
-<!-- Hero -->
-<section class="hero">
-  <h2>मिट्टी की जान, किसान की शान</h2>
-  <p>
-    उच्च गुणवत्ता वाले उर्वरक और बीज — किसान की समृद्धि के लिए।
-  </p>
-
-  <div style="margin-top:20px;">
-    <button class="btn-primary" onclick="document.getElementById('products-container').scrollIntoView({behavior:'smooth'})">
-      खरीदारी करें
-    </button>
-    <button class="btn-outline" onclick="location.href='about.html'">
-      हमारे बारे में
-    </button>
-  </div>
-</section>
-
-<!-- Commitment -->
-<section class="commitment">
-  <h3>हमारा संकल्प</h3>
-  <p>शुद्ध खाद, सही दाम और किसान का सम्मान।</p>
-</section>
-
-<!-- Side Menu -->
-<div id="side-menu" class="side-menu">
-  <div class="menu-content" id="menu-content">
-    
-    <div class="menu-header-prof">
-      <div class="profile-avatar">👤</div>
-      <h3 id="menu-user-greeting">नमस्ते</h3>
+  <!-- 3-Dots Side Menu -->
+  <div id="side-menu" class="side-menu" onclick="toggleMenu()">
+    <div class="menu-content" onclick="event.stopPropagation()">
+      <div class="menu-header-prof">
+        <div class="profile-avatar">👤</div>
+        <h3 id="menu-user-greeting">नमस्ते, किसान भाई</h3>
+        <p style="font-size: 0.8rem; opacity: 0.8;">रियाज अहमद खाद भंडार</p>
+      </div>
+      <ul class="menu-list">
+        <li>
+          <span class="icon">🌐</span>
+          <select id="app-lang" onchange="window.changeLanguage(this.value)" style="flex:1; border:none; background:transparent; font-size:1rem; outline:none; cursor:pointer;">
+            <option value="hi">हिन्दी</option>
+            <option value="en">English</option>
+          </select>
+        </li>
+        <li id="menu-login" onclick="openAuthModal(); toggleMenu()"><span class="icon">🔑</span> लॉगिन / रजिस्टर</li>
+        <li id="menu-profile" onclick="window.openProfileModal(); toggleMenu()" style="display:none;"><span class="icon">👤</span> मेरी प्रोफाइल</li>
+        <li id="menu-orders" onclick="openMyOrders(); toggleMenu()"><span class="icon">📜</span> ऑर्डर हिस्ट्री</li>
+        <li id="dark-mode-toggle" onclick="toggleDarkMode(); toggleMenu()"><span class="icon">🌙</span> डार्क मोड</li>
+        <li><a href="tel:9936733308"><span class="icon">📞</span> सहायता केंद्र (Call)</a></li>
+        <li onclick="window.openFeedbackModal(); toggleMenu()"><span class="icon">⭐</span> ऐप रेटिंग</li>
+        <li onclick="location.href='admin.html'"><span class="icon">🛠️</span> एडमिन लॉगिन</li>
+        <li onclick="location.href='about.html'"><span class="icon">ℹ️</span> स्टोर की जानकारी (About Us)</li>
+        <li id="menu-logout" onclick="logoutUser(); toggleMenu()" style="display:none; color: #f44336;"><span class="icon">👋</span> लॉगआउट</li>
+      </ul>
+      <div class="menu-footer-info">
+        © 2004 रियाज अहमद खाद भंडार | Online Store<br>
+        <small>Developed for Web</small>
+      </div>
     </div>
-
-    <ul class="menu-list">
-      <li>
-        🌐
-        <select id="app-lang">
-          <option value="hi">हिन्दी</option>
-          <option value="en">English</option>
-        </select>
-      </li>
-
-      <li id="menu-login">🔑 लॉगिन</li>
-      <li id="menu-profile" style="display:none;">👤 प्रोफाइल</li>
-      <li id="menu-orders">📜 ऑर्डर</li>
-      <li id="dark-mode-toggle">🌙 डार्क मोड</li>
-      <li onclick="location.href='admin.html'">🛠️ एडमिन</li>
-    </ul>
-
-    <div class="menu-footer-info">
-      © 2004 रियाज अहमद खाद भंडार
-    </div>
-
   </div>
-</div>
 
-<!-- Filters -->
-<nav>
-  <input id="search" placeholder="खोजें..." />
-  <select id="category-filter"></select>
-  <select id="rating-filter"></select>
-  <select id="sort-filter"></select>
-  <button id="clear-filters-btn">Clear</button>
-  <span id="cart-count">🛒 0</span>
-</nav>
+  <nav>
+    <div class="filter-group">
+      <input id="search" placeholder="उत्पाद खोजें...">
+      <div id="search-history" class="search-history-dropdown"></div>
+      <!-- Store Info link removed - now in 3-dot menu -->
+      <select id="category-filter">
+        <option value="all">📁 सभी श्रेणियां</option>
+        <option value="नाइट्रोजन खाद">नाइट्रोजन खाद</option>
+        <option value="फॉस्फेट खाद">फॉस्फेट खाद</option>
+        <option value="पोटाश खाद">पोटाश खाद</option>
+        <option value="उर्वरक">उर्वरक</option>
+        <option value="कीटनाशक">कीटनाशक</option>
+      </select>
+      <select id="rating-filter">
+        <option value="0">⭐ सभी रेटिंग</option>
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐ & ऊपर</option>
+        <option value="3">⭐⭐⭐ & ऊपर</option>
+      </select>
+      <select id="sort-filter">
+        <option value="none">🔄 क्रम बदलें</option>
+        <option value="low-high">💰 कीमत: कम से ज्यादा</option>
+        <option value="high-low">💰 कीमत: ज्यादा से कम</option>
+      </select>
+      <button id="clear-filters-btn">❌ साफ करें</button>
+    </div>
+    <span id="cart-count" onclick="openCart()" style="cursor:pointer;">🛒 0</span>
+  </nav>
 
-<!-- Slider -->
-<div id="featured-slider">
-  <div id="slider-wrapper"></div>
-</div>
+  <!-- Featured Slider -->
+  <div class="slider-container" id="featured-slider">
+    <div class="slider-wrapper" id="slider-wrapper">
+      <!-- Slides via JS -->
+    </div>
+  </div>
 
-<!-- Products -->
-<main id="products-container"></main>
+  <main id="products-container">
+    <div class="skeleton" style="height:300px;"></div>
+    <div class="skeleton" style="height:300px;"></div>
+    <div class="skeleton" style="height:300px;"></div>
+  </main>
 
-<!-- Footer -->
-<footer>
-  <small>V 1.2.0</small>
-</footer>
+  <!-- About Info Modal (moved from page to 3-dot menu) -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>📍 स्टोर की जानकारी</h2>
+        <span class="close" onclick="closeAboutModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="about-card" style="text-align: left;">
+          <p><strong>👤 प्रोपराइटर:</strong> रियाज अहमद (RIYAJ AHMAD)</p>
+          <p><strong>🏠 पता:</strong> इलाहवास, बहादुरी बाजार, महाराजगंज, उत्तर प्रदेश, भारत</p>
+          <p><strong>📞 मोबाइल:</strong> <a href="tel:9936733308">9936733308</a></p>
+          <p><strong>📧 ईमेल:</strong> <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
+          <a href="tel:9936733308" class="call-btn" style="margin-top: 15px; padding: 12px; text-align: center; display: block; text-decoration: none;">📞 अभी कॉल करें</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Riyaj+Ahmad+Khad+Bhandar+Bahaduri+Bazar+Maharajganj" target="_blank" class="maps-btn">🗺️ Google Maps पर लोकेशन देखें</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- Firebase -->
-<script defer src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <div id="cart-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🛒 आपकी कार्ट</h2>
+        <span class="close" onclick="closeCart()">&times;</span>
+      </div>
+      <div class="modal-body" id="cart-items"></div>
 
-<script defer src="./firebaseConfig.js"></script>
-<script defer src="./products.js"></script>
-<script defer src="./cart.js"></script>
-<script defer src="./app.js"></script>
+      <!-- ग्राहक जानकारी सेक्शन (कार्ट में) -->
+      <div id="logged-in-user-info" style="display:none; padding: 15px; margin: 10px 20px; background: #e8f5e9; border-radius: 12px; border: 1px solid #c8e6c9;">
+        <p style="font-weight: bold; color: #2e7d32; margin-bottom: 5px;">📍 डिलीवरी विवरण:</p>
+        <p><strong>नाम:</strong> <span id="display-name"></span></p>
+        <p><strong>फोन:</strong> <span id="display-phone"></span></p>
+        <p><strong>पता:</strong> <span id="display-address"></span></p>
+        <p><strong>आधार:</strong> <span id="display-aadhar"></span></p>
+        <button onclick="window.openProfileModal(); window.closeCart();" style="margin-top: 10px; background: #1976d2; color: white; border: none; padding: 5px 12px; border-radius: 5px; font-size: 0.8rem; cursor: pointer;">✏️ बदलें</button>
+      </div>
 
-<!-- Optimized JS -->
-<script>
-  // Menu toggle (optimized)
-  const menu = document.getElementById("side-menu");
-  const menuBtn = document.getElementById("menu-btn");
+      <div id="customer-input-fields" style="display:none; flex-direction: column; gap: 10px; padding: 15px; margin: 10px 20px; background: #fff3e0; border-radius: 12px;">
+        <p style="color: #e65100; font-weight: bold;">⚠️ कृपया विवरण भरें:</p>
+        <input type="text" id="customer-name" placeholder="आपका नाम" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+        <input type="tel" id="customer-phone" placeholder="मोबाइल नंबर" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+        <div style="display: flex; gap: 5px;">
+          <input type="text" id="customer-address" placeholder="पूरा पता" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+          <button onclick="window.fetchCurrentLocation()" style="padding: 10px; background: #1976d2; color: white; border: none; border-radius: 8px;">📍</button>
+        </div>
+        <input type="number" id="customer-aadhar" placeholder="आधार नंबर" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+        <label id="save-details-checkbox" style="display: none; font-size: 0.85rem; align-items: center; gap: 5px;">
+            <input type="checkbox" id="save-info" checked> भविष्य के लिए जानकारी सेव करें
+        </label>
+      </div>
 
-  menuBtn.addEventListener("click", () => {
-    menu.style.display = "block";
-  });
+      <div id="cart-profile-status" style="padding: 15px; margin: 10px 20px; border-radius: 8px; text-align: center; background: #fff3e0; display: none;">
+          <p style="color: #e65100; font-size: 0.9rem; margin-bottom: 8px;">⚠️ ऑर्डर के लिए प्रोफाइल पूरी करें</p>
+          <button onclick="window.openProfileModal(); window.closeCart();" style="background:#ef6c00; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">👤 प्रोफाइल भरें</button>
+      </div>
+      <div id="login-prompt-in-cart" style="text-align:center; padding: 15px; display:none;">
+          <p style="margin-bottom:10px;">ऑर्डर के लिए लॉगिन अनिवार्य है</p>
+          <button class="auth-btn" onclick="openAuthModal()">👤 लॉगिन करें</button>
+      </div>
+      <div class="modal-footer">
+        <!-- कूपन कोड सेक्शन -->
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+          <input type="text" id="coupon-code" placeholder="कूपन कोड (उदा: RIYAJ10)" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+          <button onclick="window.applyCoupon()" style="background: #1b5e20; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">लागू करें</button>
+        </div>
+        <div id="discount-row" style="display: none; justify-content: space-between; color: #f44336; margin-bottom: 5px; font-weight: bold;">
+          <span>छूट (Discount):</span>
+          <span id="discount-amount">-₹0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;">
+          <span>कुल राशि:</span>
+          <span id="total">₹0</span>
+        </div>
+        <div id="qr-payment-container" style="display: none; margin-bottom: 15px;"></div>
+        <div id="screenshot-upload-section" style="margin-bottom: 15px; border: 1px dashed #673ab7; padding: 10px; border-radius: 8px; background: #f9f6ff;">
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #673ab7;">📸 पेमेंट का स्क्रीनशॉट अपलोड करें (Optional):</label>
+          <input type="file" id="payment-screenshot" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+          <input type="hidden" id="screenshot-base64">
+        </div>
+        <div class="cart-action-group">
+          <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
+          <div class="btn-secondary-row">
+            <button class="btn-pay" onclick="window.payViaUPI()" id="btn-pay-text">💸 पेमेंट</button>
+            <button class="btn-qr" onclick="window.showPaymentQR()" id="btn-qr-text" style="background: #673ab7; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer;">🖼️ QR कोड</button>
+            <button class="btn-print" id="print-cart">🖨️ रसीद</button>
+            <button class="btn-clear" id="clear-cart">🗑️ साफ</button>
+          </div>
+          <button onclick="closeCart()" class="btn-continue" id="btn-continue-text">जारी रखें</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  menu.addEventListener("click", (e) => {
-    if (e.target === menu) {
-      menu.style.display = "none";
-    }
-  });
+  <!-- Product Details Modal -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-product-name">विवरण</h2>
+        <span class="close" onclick="closeProductModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="product-details-content">
+        <!-- Content via JS -->
+      </div>
+    </div>
+  </div>
 
-  // Language change
-  document.getElementById("app-lang").addEventListener("change", e => {
-    window.changeLanguage?.(e.target.value);
-  });
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>👤 मेरी प्रोफाइल + स्टोर जानकारी</h2>
+        <span class="close" onclick="window.closeProfileModal()">&times;</span>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="text" id="prof-input-name" placeholder="आपका पूरा नाम" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        <input type="tel" id="prof-input-phone" placeholder="मोबाइल नंबर" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        <input type="number" id="prof-input-aadhar" placeholder="आधार नंबर" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+        
+        <h4 style="margin-top:10px;">📍 मेरे सेव किए गए पते:</h4>
+        <div id="saved-addresses-list"></div>
+        
+        <div style="display: flex; gap: 5px;">
+          <input type="text" id="prof-input-address" placeholder="पूरा पता" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px;">
+          <button onclick="window.fetchCurrentLocation()" style="padding:10px; background:#1976d2; color:white; border:none; border-radius:8px;">📍</button>
+          <button onclick="window.addAddressFromInput()" style="padding:10px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold;">➕</button>
+        </div>
+        <button onclick="window.saveProfileData()" style="width:100%; margin-top:10px; padding:15px; background:#1976d2; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✅ जानकारी सेव करें</button>
+      </div>
+    </div>
+  </div>
 
-  // Dark mode
-  document.getElementById("dark-mode-toggle").addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-  });
+  <!-- Login/Register Modal -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="auth-modal-title">👤 लॉगिन / रजिस्टर</h2>
+        <span class="close" onclick="closeAuthModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="auth-form">
+          <input type="email" id="auth-email" placeholder="ईमेल" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+          <div class="password-wrapper">
+            <input type="password" id="auth-password" placeholder="पासवर्ड" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+            <span class="password-toggle" onclick="togglePasswordVisibility('auth-password')">👁️</span>
+          </div>
+          <div id="confirm-pass-container" class="password-wrapper" style="display: none;">
+            <input type="password" id="auth-confirm-password" placeholder="पासवर्ड दोबारा डालें (रजिस्ट्रेशन के लिए)" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 1rem;">
+            <span class="password-toggle" onclick="togglePasswordVisibility('auth-confirm-password')">👁️</span>
+          </div>
+          <button class="save-btn" style="background:#2e7d32;" onclick="loginUser()">लॉगिन करें</button>
+          <button id="reg-toggle-btn" class="save-btn" style="background:#1976d2; margin-top:10px;" onclick="showRegistrationFields()">नया अकाउंट बनाएं (Register)</button>
+          <button id="real-reg-btn" class="save-btn" style="background:#1976d2; margin-top:10px; display:none;" onclick="registerUser()">रजिस्टर करें</button>
+          <p style="text-align:center; margin-top:15px; font-size:0.9rem;">
+            <a href="#" onclick="resetPassword(); return false;" style="color:#1976d2;">पासवर्ड भूल गए?</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-</script>
+  <!-- My Orders Modal -->
+  <div id="orders-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📦 मेरे ऑर्डर (My Orders)</h2>
+        <span class="close" onclick="closeOrdersModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="my-orders-list">
+        <!-- Orders via JS -->
+      </div>
+    </div>
+  </div>
 
+  <!-- Feedback Modal -->
+  <div id="feedback-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⭐ आपकी राय (Feedback)</h2>
+        <span class="close" onclick="window.closeFeedbackModal()">&times;</span>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <p>आपको हमारा ऐप कैसा लगा?</p>
+        <div class="star-rating" style="font-size: 2.5rem; color: #fbc02d; margin: 15px 0; cursor: pointer;">
+          <span onclick="window.setFeedbackRating(1)">☆</span><span onclick="window.setFeedbackRating(2)">☆</span><span onclick="window.setFeedbackRating(3)">☆</span><span onclick="window.setFeedbackRating(4)">☆</span><span onclick="window.setFeedbackRating(5)">☆</span>
+        </div>
+        <textarea id="feedback-text" placeholder="अपना सुझाव यहाँ लिखें..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; height:80px;"></textarea>
+        <button onclick="window.submitFeedback()" style="width:100%; margin-top:15px; padding:12px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">भेजें (Submit)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Up/Down Arrows -->
+  <div class="scroll-arrows">
+    <div id="scroll-up" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="ऊपर जाएं">↑</div>
+    <div id="scroll-down" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="नीचे जाएं">↓</div>
+  </div>
+
+  <footer style="text-align: center; padding: 20px; background: #eee; margin-top: 20px;">
+    <span style="color: #999; font-size: 0.7rem; display: block;">वर्जन V 1.2.0 - Stable PWA</span>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+  <!-- 🔥 Perfect Firebase - Fixed Config -->
+  <script src="./firebaseConfig.js"></script>
+
+  <script src="./products.js"></script>
+  <script src="./cart.js"></script>
+  <script src="./app.js"></script>
 </body>
+
 </html>

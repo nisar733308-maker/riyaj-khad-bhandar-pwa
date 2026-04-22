@@ -1,7 +1,5 @@
-const CACHE_NAME = 'khad-v69-optimized';
-
-// Static assets
-const STATIC_ASSETS = [
+const CACHE_NAME = 'khad-v68-optimized';
+const STATIC_CACHE = [
   './',
   './index.html',
   './style.css',
@@ -11,75 +9,39 @@ const STATIC_ASSETS = [
   './manifest.json'
 ];
 
-// ================= INSTALL =================
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
-      .catch((err) => console.error('SW Install Error:', err))
-  );
-});
+self.addEventListener('install', e => e.waitUntil(
+  caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_CACHE)).then(() => self.skipWaiting())
+));
 
-// ================= FETCH =================
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-
-  // 🔹 Handle navigation (HTML) - Network First
-  if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request));
+self.addEventListener('fetch', e => {
+  // HTML फाइलों के लिए: 'Network First' स्ट्रेटेजी ताकि नया अपडेट तुरंत मिले
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          const resClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
     return;
   }
 
-  // 🔹 Handle other requests - Stale While Revalidate
-  event.respondWith(staleWhileRevalidate(request));
-});
-
-// ================= STRATEGIES =================
-
-// Network First (for HTML pages)
-const networkFirst = async (request) => {
-  try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse && networkResponse.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-
-    return networkResponse;
-  } catch (error) {
-    const cachedResponse = await caches.match(request);
-    return cachedResponse || caches.match('./index.html');
-  }
-};
-
-// Stale While Revalidate (for CSS, JS, images)
-const staleWhileRevalidate = async (request) => {
-  const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-
-  const fetchPromise = fetch(request)
-    .then((networkResponse) => {
-      if (networkResponse && networkResponse.status === 200) {
-        cache.put(request, networkResponse.clone());
-      }
-      return networkResponse;
+  // अन्य फाइलों के लिए: Cache First
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).then(response => {
+        const resClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+        return response;
+      });
     })
-    .catch(() => null);
-
-  return cachedResponse || fetchPromise;
-};
-
-// ================= ACTIVATE =================
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
   );
 });
+
+self.addEventListener('activate', e => e.waitUntil(
+  caches.keys().then(keys => Promise.all(
+    keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+  ))
+));

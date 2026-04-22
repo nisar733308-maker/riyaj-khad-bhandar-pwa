@@ -1,210 +1,83 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>रियाज अहमद खाद भंडार - स्टोर की जानकारी</title>
-
-  <link rel="stylesheet" href="./style.css" />
-
+  <link rel="stylesheet" href="./style.css">
   <style>
-    :root {
-      --primary: #2e7d32;
-      --primary-dark: #1b5e20;
-      --accent: #1976d2;
-    }
-
-    body {
-      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-      min-height: 100vh;
-      padding: 20px;
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-
-    .about-container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .about-header {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      padding: 40px 30px;
-      text-align: center;
-    }
-
-    .about-body {
-      padding: 40px;
-    }
-
-    .logo {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: 4px solid white;
-      margin: 0 auto 20px;
-      object-fit: cover;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin: 30px 0;
-    }
-
-    .contact-card {
-      background: #f8f9fa;
-      padding: 25px;
-      border-radius: 15px;
-      border-left: 5px solid var(--primary);
-      text-align: center;
-      transition: transform 0.3s ease;
-    }
-
-    .contact-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .contact-card a {
-      color: var(--accent);
-      font-weight: bold;
-      text-decoration: none;
-      font-size: 1.1rem;
-    }
-
-    .maps-section {
-      text-align: center;
-      margin: 40px 0;
-    }
-
-    .maps-btn {
-      display: inline-block;
-      background: var(--accent);
-      color: white;
-      padding: 15px 30px;
-      border-radius: 50px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      box-shadow: 0 5px 15px rgba(25,118,210,0.3);
-      transition: all 0.3s ease;
-      margin: 10px;
-      text-decoration: none;
-    }
-
-    .maps-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(25,118,210,0.4);
-    }
-
-    .back-btn {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.9);
-      padding: 10px 20px;
-      border-radius: 25px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
+    body { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); min-height: 100vh; padding: 20px; }
+    .about-container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .about-header { background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; padding: 40px 30px; text-align: center; }
+    .about-body { padding: 40px; }
+    .logo { width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; margin: 0 auto 20px; object-fit: cover; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0; }
+    .contact-card { background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 5px solid #2e7d32; text-align: center; transition: transform 0.3s; }
+    .contact-card:hover { transform: translateY(-5px); }
+    .contact-card a { color: #1976d2; font-weight: bold; text-decoration: none; font-size: 1.1rem; }
+    .maps-section { text-align: center; margin: 40px 0; }
+    .maps-btn { display: inline-block; background: #1976d2; color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(25,118,210,0.3); transition: all 0.3s; margin: 10px; }
+    .maps-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(25,118,210,0.4); }
+    .back-btn { position: fixed; top: 20px; left: 20px; background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; }
   </style>
 </head>
-
 <body>
-
-<button class="back-btn" id="backBtn">← होम पर वापस</button>
-
-<div class="about-container">
-
-  <div class="about-header">
-    <img src="./new-icon-192.png" alt="रियाज अहमद खाद भंडार" class="logo" loading="lazy" />
-    <h1 style="font-size: 2.5rem; margin-bottom: 10px;">रियाज अहमद खाद भंडार</h1>
-    <p style="font-size: 1.2rem; opacity: 0.95;">महाराजगंज के किसानों का भरोसेमंद साथी</p>
+  <button class="back-btn" onclick="location.href='index.html'">← होम पर वापस</button>
+  
+  <div class="about-container">
+    <div class="about-header">
+      <img src="./new-icon-192.png" alt="रियाज अहमद खाद भंडार" class="logo">
+      <h1 style="font-size: 2.5rem; margin-bottom: 10px;">रियाज अहमद खाद भंडार</h1>
+      <p style="font-size: 1.2rem; opacity: 0.95;">महाराजगंज के किसानों का भरोसेमंद साथी</p>
+    </div>
+    
+    <div class="about-body">
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div style="font-size: 3rem; margin-bottom: 15px;">👨‍💼</div>
+          <h3>मालिक</h3>
+          <p style="font-size: 1.3rem; font-weight: bold; margin-bottom: 10px;">रियाज अहमद</p>
+          <p>20+ वर्षों का अनुभव | उच्च गुणवत्ता उर्वरक</p>
+        </div>
+        
+        <div class="contact-card">
+          <div style="font-size: 3rem; margin-bottom: 15px;">📞</div>
+          <h3>संपर्क</h3>
+          <p style="font-size: 1.3rem; font-weight: bold;"><a href="tel:9936733308">9936733308</a></p>
+          <p style="font-size: 1rem;">WhatsApp/Call | 24x7 सहायता</p>
+        </div>
+        
+        <div class="contact-card">
+          <div style="font-size: 3rem; margin-bottom: 15px;">📧</div>
+          <h3>ईमेल</h3>
+          <p style="font-size: 1.1rem;"><a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a></p>
+        </div>
+        
+        <div class="contact-card">
+          <div style="font-size: 3rem; margin-bottom: 15px;">🏪</div>
+          <h3>पता</h3>
+          <p>इलाहवास, बहादुरी बाजार<br>महाराजगंज, उत्तर प्रदेश</p>
+        </div>
+      </div>
+      
+      <div class="maps-section">
+        <h2 style="color: #004831; margin-bottom: 20px;">🗺️ हमारा स्थान खोजें</h2>
+        <a href="https://www.google.com/maps/search/?api=1&query=इलाहवास,+बहादुरी+बाजार,+महाराजगंज" target="_blank" class="maps-btn">Google Maps पर देखें</a>
+        <a href="tel:9936733308" class="maps-btn" style="background: #25D366;">📞 अभी कॉल करें</a>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-top: 40px;">
+        <h3 style="margin-bottom: 15px;">🌾 हमारा संकल्प</h3>
+        <p>शुद्ध खाद • सही दाम • किसान का सम्मान।<br>हम केवल उत्पाद नहीं, समृद्धि बेचते हैं।</p>
+      </div>
+    </div>
   </div>
 
-  <div class="about-body">
-
-    <div class="contact-grid">
-
-      <div class="contact-card">
-        <div style="font-size: 3rem; margin-bottom: 15px;">👨‍💼</div>
-        <h3>मालिक</h3>
-        <p style="font-size: 1.3rem; font-weight: bold;">रियाज अहमद</p>
-        <p>20+ वर्षों का अनुभव | उच्च गुणवत्ता उर्वरक</p>
-      </div>
-
-      <div class="contact-card">
-        <div style="font-size: 3rem; margin-bottom: 15px;">📞</div>
-        <h3>संपर्क</h3>
-        <p style="font-size: 1.3rem; font-weight: bold;">
-          <a href="tel:9936733308">9936733308</a>
-        </p>
-        <p>WhatsApp/Call | 24x7 सहायता</p>
-      </div>
-
-      <div class="contact-card">
-        <div style="font-size: 3rem; margin-bottom: 15px;">📧</div>
-        <h3>ईमेल</h3>
-        <p>
-          <a href="mailto:nisar733308@gmail.com">nisar733308@gmail.com</a>
-        </p>
-      </div>
-
-      <div class="contact-card">
-        <div style="font-size: 3rem; margin-bottom: 15px;">🏪</div>
-        <h3>पता</h3>
-        <p>इलाहवास, बहादुरी बाजार<br />महाराजगंज, उत्तर प्रदेश</p>
-      </div>
-
-    </div>
-
-    <div class="maps-section">
-      <h2 style="color:#004831;">🗺️ हमारा स्थान खोजें</h2>
-
-      <a href="https://www.google.com/maps/search/?api=1&query=इलाहवास,+बहादुरी+बाजार,+महाराजगंज"
-         target="_blank"
-         rel="noopener noreferrer"
-         class="maps-btn">
-         Google Maps पर देखें
-      </a>
-
-      <a href="tel:9936733308" class="maps-btn" style="background:#25D366;">
-        📞 अभी कॉल करें
-      </a>
-    </div>
-
-    <div style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color:white; padding:30px; border-radius:15px; text-align:center; margin-top:40px;">
-      <h3>🌾 हमारा संकल्प</h3>
-      <p>शुद्ध खाद • सही दाम • किसान का सम्मान।<br>हम केवल उत्पाद नहीं, समृद्धि बेचते हैं।</p>
-    </div>
-
-  </div>
-</div>
-
-<script>
-  // Back Button (clean JS)
-  document.getElementById("backBtn")
-    .addEventListener("click", () => {
-      window.location.href = "index.html";
-    });
-
-  // PWA Safe Register
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js")
-        .catch(err => console.warn("SW failed:", err));
-    });
-  }
-</script>
-
+  <script>
+    // PWA Features
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
 </body>
 </html>
