@@ -20,6 +20,9 @@ const defaultProducts = [
   }
 ];
 
-// LocalStorage से प्रोडक्ट्स लोड करें या डिफॉल्ट दिखाएं
-let products = JSON.parse(localStorage.getItem('all_products')) || defaultProducts;
-if(!localStorage.getItem('all_products')) localStorage.setItem('all_products', JSON.stringify(products));
+// Browser safe products - Global export
+if (typeof window !== 'undefined') {
+  window.defaultProducts = defaultProducts;
+  window.products = JSON.parse(localStorage.getItem('all_products')) || defaultProducts;
+  if(!localStorage.getItem('all_products')) localStorage.setItem('all_products', JSON.stringify(window.products));
+}
