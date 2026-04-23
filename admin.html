@@ -96,28 +96,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="./products.js"></script>
+  <script src="./firebaseConfig.js"></script> <!-- Firebase config centralized -->
   <script>
-    // API डिटेल्स यहाँ भी वही रखें जो app.js में हैं
-    var firebaseConfig = {
-      apiKey: "AIzaSyCssU0rVx9INImuarodfqZQYpPJLK7W62Q",
-      authDomain: "riyaj-khad-store.firebaseapp.com",
-      databaseURL: "https://riyaj-khad-store-default-rtdb.firebaseio.com",
-      projectId: "riyaj-khad-store",
-      storageBucket: "riyaj-khad-store.appspot.com",
-      messagingSenderId: "912749567277",
-      appId: "1:912749567277:web:6aa9a25e2556f9b87c1474"
-    };
-    
-    let db, auth;
+    let db = window.db; // Use global Firebase instance
+    let auth = window.firebase.auth(); // Use global Firebase auth instance
     const allowedAdminEmail = "nisar733308@gmail.com"; // यहाँ आपका एडमिन ईमेल
-
-    try {
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      auth = firebase.auth();
-    } catch (e) {
-      console.error("Firebase Init Error:", e);
-    }
 
     let currentProducts = [];
     let allOrders = []; // सभी ऑर्डर्स को स्टोर करने के लिए

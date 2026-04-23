@@ -4,7 +4,7 @@ let appliedDiscount = 0; // 0.10 means 10%
 
 function addToCart(productId, quantity = 1) {
   // currentProducts (Firebase वाला डेटा) से सामान ढूंढें
-  const source = (typeof currentProducts !== 'undefined' && currentProducts.length > 0) ? currentProducts : (typeof products !== 'undefined' ? products : []);
+  const source = window.currentProducts || window.products || [];
   const product = source.find(p => String(p.id) === String(productId));
   
   if (!product) return console.error("Product not found:", productId);
@@ -135,37 +135,6 @@ window.applyCoupon = () => {
   renderCartItems();
 };
 
-// GPS Location Function
-window.fetchCurrentLocation = () => {
-  // कार्ट और प्रोफाइल दोनों इनपुट को चेक करें
-  const addressInput = document.getElementById('customer-address') || document.getElementById('prof-input-address');
-  if (!navigator.geolocation || !addressInput) {
-    alert("❌ आपका ब्राउज़र लोकेशन सपोर्ट नहीं करता।");
-    return;
-  }
-  
-  addressInput.placeholder = "लोकेशन ढूंढ रहे हैं...";
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const { latitude, longitude } = position.coords;
-    try {
-      // पता ढूंढने के लिए API कॉल
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`, {
-        headers: {
-          'Accept-Language': 'hi,en'
-        }
-      });
-      const data = await response.json();
-      addressInput.value = data.display_name || `${latitude}, ${longitude}`;
-      if (window.showToast) window.showToast("📍 लोकेशन मिल गई!");
-    } catch (e) {
-      addressInput.value = `${latitude}, ${longitude}`;
-    }
-  }, (err) => {
-    alert("❌ लोकेशन नहीं मिल पाई। कृपया सेटिंग में GPS चालू करें।");
-    addressInput.placeholder = "पूरा पता";
-  });
-};
-
 async function handleCheckout() {
   if (cart.length === 0) return;
   if (!window.currentUser) {
@@ -265,7 +234,7 @@ window.payViaUPI = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return;
 
-  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total}&cu=INR`;
+  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total.toFixed(2)}&cu=INR`;
 
   // Mobile check for deep linking
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -273,7 +242,7 @@ window.payViaUPI = () => {
     window.location.href = upiUrl;
   } else {
     alert("💻 आप डेस्कटॉप पर हैं। कृपया 'QR कोड' बटन दबाएं और अपने मोबाइल से स्कैन करें।");
-    window.showPaymentQR();
+    if (window.showPaymentQR) window.showPaymentQR();
   }
 };
 
@@ -282,7 +251,7 @@ window.showPaymentQR = () => {
   const total = subtotal - (subtotal * appliedDiscount);
   if(total === 0) return alert("कार्ट खाली है!");
   
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total}&cu=INR`;
+  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total.toFixed(2)}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
   const qrContainer = document.getElementById('qr-payment-container');
   if (!qrContainer) return;

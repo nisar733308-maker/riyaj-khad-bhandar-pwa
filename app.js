@@ -3,6 +3,15 @@
 // ग्लोबल स्टेट
 window.currentProducts = [];
 
+// Debounce Function for Search
+function debounce(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. सर्विस वर्कर रजिस्ट्रेशन (PWA के लिए)
     if ('serviceWorker' in navigator) {
@@ -13,20 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. शुरुआती डेटा लोड करना
     // products.js से डिफॉल्ट प्रोडक्ट्स लें
-window.currentProducts = (typeof window !== 'undefined' && typeof window.products !== 'undefined') ? window.products : [];
+    window.currentProducts = window.products || [];
     renderProducts(window.currentProducts);
 
     // 3. सर्च फंक्शनलिटी (Corrected ID to 'search')
     const searchInput = document.getElementById('search');
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
+        searchInput.addEventListener('input', debounce((e) => {
             const query = e.target.value.toLowerCase();
             const filtered = window.currentProducts.filter(p => 
                 p.name.toLowerCase().includes(query) || 
                 p.category.toLowerCase().includes(query)
             );
             renderProducts(filtered);
-        });
+        }, 400));
     }
 
     // 4. कैटेगरी और सॉर्ट फिल्टर (Corrected for <select> elements)
@@ -104,7 +113,7 @@ window.currentProducts = (typeof window !== 'undefined' && typeof window.product
 });
 
 // 🔥 GPS Location Fix - 100% Working!
-window.fetchCurrentLocation = () => {
+window.fetchCurrentLocation = (targetInputId = 'prof-input-address') => {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -128,14 +137,14 @@ window.fetchCurrentLocation = () => {
                                 data.address.state || '',
                                 data.address.country || ''
                             ].filter(Boolean).join(', ');
-                        }
-                        document.getElementById('prof-input-address').value = address;
+                        }                        
+                        document.getElementById(targetInputId).value = address;
                         window.showToast("✅ GPS Address भरा गया: " + address.substring(0, 50));
                     })
                     .catch(err => {
                         console.log("Reverse geo fail, using coords:", err);
                         // Fallback to coordinates + simple address
-                        document.getElementById('prof-input-address').value = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)} - GPS Active`;
+                        document.getElementById(targetInputId).value = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)} - GPS Active`;
                         window.showToast("📍 GPS Coordinates भरे गए");
                     });
             },
@@ -168,7 +177,7 @@ window.fetchCurrentLocation = () => {
 
 // --- Product Detail Logic (IFFCO Style) ---  
 window.showProductDetails = (id) => {
-    const source = (window.currentProducts && window.currentProducts.length > 0) ? window.currentProducts : (typeof products !== 'undefined' ? products : []);
+    const source = window.currentProducts || window.products || [];
     const product = source.find(p => String(p.id) === String(id));
     if (!product) return;
 
@@ -197,12 +206,8 @@ function renderProducts(productsList) {
     if (!container) return;
 
     // यदि लिस्ट खाली है, तो दोबारा चेक करें (Robustness)
-    if (!productsList || productsList.length === 0) {
-        if (window.currentProducts && window.currentProducts.length > 0) {
-            productsList = window.currentProducts;
-        } else if (typeof products !== 'undefined' && products.length > 0) {
-            productsList = products;
-        }
+    if (!productsList || productsList.length === 0) { // Fallback to global products if filtered list is empty
+        productsList = window.currentProducts || window.products || [];
     }
 
     if (!productsList || productsList.length === 0) {
