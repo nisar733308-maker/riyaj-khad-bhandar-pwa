@@ -235,11 +235,11 @@
       </div>
 
       <div id="cart-profile-status" style="padding: 15px; margin: 10px 20px; border-radius: 8px; text-align: center; background: #fff3e0; display: none;">
-          <p style="color: #e65100; font-size: 0.9rem; margin-bottom: 8px;">⚠️ ऑर्डर के लिए प्रोफाइल पूरी करें</p>
+          <p style="color: #e65100; font-size: 0.9rem; margin-bottom: 8px;">⚠️ भुगतान के लिए प्रोफाइल पूरी करें</p>
           <button onclick="window.openProfileModal(); window.closeCart();" style="background:#ef6c00; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">👤 प्रोफाइल भरें</button>
       </div>
       <div id="login-prompt-in-cart" style="text-align:center; padding: 15px; display:none;">
-          <p style="margin-bottom:10px;">ऑर्डर के लिए लॉगिन अनिवार्य है</p>
+          <p style="margin-bottom:10px;">भुगतान के लिए लॉगिन अनिवार्य है</p>
           <button class="auth-btn" onclick="openAuthModal()">👤 लॉगिन करें</button>
       </div>
       <div class="modal-footer">
@@ -256,17 +256,10 @@
           <span>कुल राशि:</span>
           <span id="total">₹0</span>
         </div>
-        <div id="qr-payment-container" style="display: none; margin-bottom: 15px;"></div>
-        <div id="screenshot-upload-section" style="margin-bottom: 15px; border: 1px dashed #673ab7; padding: 10px; border-radius: 8px; background: #f9f6ff;">
-          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #673ab7;">📸 पेमेंट का स्क्रीनशॉट अपलोड करें (Optional):</label>
-          <input type="file" id="payment-screenshot" accept="image/*" style="width: 100%; font-size: 0.8rem;">
-          <input type="hidden" id="screenshot-base64">
-        </div>
         <div class="cart-action-group">
-          <button id="checkout">✅ ऑर्डर व्हाट्सएप करें</button>
+          <button id="goto-payment-btn" onclick="window.payViaUPI()" style="background: #ffa41c; color: #111; border: 1px solid #a88734; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-bottom: 10px;">💳 भुगतान करें (Proceed to Payment)</button>
+          <button id="checkout" style="background: #2e7d32;">✅ ऑर्डर व्हाट्सएप करें</button>
           <div class="btn-secondary-row">
-            <button class="btn-pay" onclick="window.payViaUPI()" id="btn-pay-text">💸 पेमेंट</button>
-            <button class="btn-qr" onclick="window.showPaymentQR()" id="btn-qr-text" style="background: #673ab7; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer;">🖼️ QR कोड</button>
             <button class="btn-print" id="print-cart">🖨️ रसीद</button>
             <button class="btn-clear" id="clear-cart">🗑️ साफ</button>
           </div>

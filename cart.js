@@ -239,32 +239,10 @@ window.payViaUPI = () => {
   // Mobile check for deep linking
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (isMobile) {
-    window.location.href = upiUrl;
+    window.location.href = 'payment.html';
   } else {
-    window.showToast("💻 आप डेस्कटॉप पर हैं। कृपया 'QR कोड' बटन दबाएं।");
-    if (window.showPaymentQR) window.showPaymentQR();
+    window.location.href = 'payment.html';
   }
-};
-
-window.showPaymentQR = () => {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal - (subtotal * appliedDiscount);
-  if(total === 0) return alert("कार्ट खाली है!");
-  
-  const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total.toFixed(2)}&cu=INR`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
-  const qrContainer = document.getElementById('qr-payment-container');
-  if (!qrContainer) return;
-
-  qrContainer.innerHTML = `
-    <div style="text-align:center; padding:15px; background:#fff; border:2px solid #673ab7; border-radius:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top:10px;">
-      <p style="font-weight:bold; color:#673ab7; margin-bottom:10px;">स्कैन करके पेमेंट करें</p>
-      <img src="${qrUrl}" alt="Payment QR" style="width:200px; height:200px; border:1px solid #eee; padding:5px;">
-      <p style="font-size:0.8rem; color:#666; margin-top:5px;">UPI ID: 9936733308-3@ybl</p>
-      <button onclick="document.getElementById('qr-payment-container').style.display='none'" style="margin-top:10px; background:#f44336; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">बंद करें (Close)</button>
-    </div>
-  `;
-  qrContainer.style.display = 'block';
 };
 
 async function compressPaymentImage(base64Str) {
