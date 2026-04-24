@@ -114,7 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 🔥 GPS Location Fix - 100% Working!
 window.fetchCurrentLocation = (targetInputId = 'prof-input-address') => {
+    const targetInput = document.getElementById(targetInputId);
+    const originalPlaceholder = targetInput.placeholder;
+    
     if (navigator.geolocation) {
+        targetInput.placeholder = "📍 लोकेशन ढूँढ रहे हैं...";
+        targetInput.value = "";
+        
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
@@ -138,7 +144,7 @@ window.fetchCurrentLocation = (targetInputId = 'prof-input-address') => {
                                 data.address.country || ''
                             ].filter(Boolean).join(', ');
                         }                        
-                        document.getElementById(targetInputId).value = address;
+                        targetInput.value = address;
                         window.showToast("✅ GPS Address भरा गया: " + address.substring(0, 50));
                     })
                     .catch(err => {
@@ -147,9 +153,11 @@ window.fetchCurrentLocation = (targetInputId = 'prof-input-address') => {
                         document.getElementById(targetInputId).value = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)} - GPS Active`;
                         window.showToast("📍 GPS Coordinates भरे गए");
                     });
+                targetInput.placeholder = originalPlaceholder;
             },
             (error) => {
                 console.error("GPS Error:", error);
+                targetInput.placeholder = originalPlaceholder;
                 let msg = "GPS Error";
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
@@ -215,36 +223,35 @@ function renderProducts(productsList) {
         return;
     }
 
-    container.innerHTML = productsList.map(product => `
-        <div class="product-card" onclick="showProductDetails('${product.id}')" style="cursor: pointer; background: #fff; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.3s ease; border: 1px solid #eee; border-top: 5px solid #004831; position: relative; display: flex; flex-direction: column;">
-            <div style="position: relative; overflow: hidden;">
-                <img src="${product.image || 'https://via.placeholder.com/400x300?text=Product'}" 
-                     alt="${product.name}" 
-                     loading="lazy"
-                     onload="this.classList.add('loaded')"
-                     onerror="this.src='https://via.placeholder.com/400x300?text=Image+Error'"
-                     style="width: 100%; height: 200px; object-fit: cover; transition: all 0.5s ease;">
-                ${product.stockCount <= 0 ? 
-                    `<div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #d32f2f; z-index: 2;">स्टॉक खत्म</div>` : ''}
-                <span style="position: absolute; top: 12px; left: 12px; background: rgba(46, 125, 50, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; z-index: 1;">${product.category}</span>
+    container.innerHTML = productsList.map(p => {
+        const discount = p.mrp ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
+        return `
+        <div class="product-card" onclick="showProductDetails('${p.id}')">
+            ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+            <div class="image-container">
+                <img src="${p.image}" alt="${p.name}" loading="lazy">
             </div>
-            <div style="padding: 16px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h3 style="margin: 0 0 8px 0; font-size: 1.15rem; color: #1a1a1a; font-weight: 700;">${product.name}</h3>
-                <p style="font-size: 0.85rem; color: #757575; line-height: 1.4; height: 3.8em; overflow: hidden; margin-bottom: 15px;">${product.desc || ''}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                    <div>
-                        <span style="font-size: 1.3rem; font-weight: 800; color: #2e7d32;">₹${product.price}</span>
-                    </div>
-                    <button onclick="event.stopPropagation(); addToCart('${product.id}')" 
-                            ${product.stockCount <= 0 ? 'disabled' : ''}
-                            style="background: ${product.stockCount <= 0 ? '#ccc' : '#2e7d32'}; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);">
-                        ${product.stockCount <= 0 ? 'खत्म' : '🛒 जोड़ें'}
+            <div class="p-info" style="padding: 10px 0;">
+                <h3 style="font-size: 1rem; color: #007185; margin: 0; line-height: 1.3; height: 2.6em; overflow: hidden;">${p.name}</h3>
+                <div style="margin: 5px 0;">
+                    <span style="font-size: 1.4rem; font-weight: bold;">₹${p.price}</span>
+                    ${p.mrp ? `<span style="text-decoration: line-through; color: #565959; font-size: 0.8rem; margin-left: 5px;">M.R.P: ₹${p.mrp}</span>` : ''}
+                </div>
+                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart('${p.id}')" ${p.stockCount <= 0 ? 'disabled' : ''}>
+                        ${p.stockCount <= 0 ? 'Out of Stock' : 'Add to Cart'}
                     </button>
+                    <button class="buy-now-btn" onclick="event.stopPropagation(); window.buyNow('${p.id}')" ${p.stockCount <= 0 ? 'disabled' : ''}>Buy Now</button>
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
+
+window.buyNow = (id) => {
+    addToCart(id);
+    openCart();
+};
 
 // मोडल कंट्रोल फंक्शन
 window.openCart = () => {
