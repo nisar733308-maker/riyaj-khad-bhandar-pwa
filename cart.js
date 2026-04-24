@@ -42,12 +42,15 @@ function updateCartCount() {
 
 function renderCartItems() {
   const container = document.getElementById('cart-items');
+  if (!container) return;
+
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discountAmount = subtotal * appliedDiscount;
   const total = subtotal - discountAmount;
   
   const discountRow = document.getElementById('discount-row');
   const discountDisplay = document.getElementById('discount-amount');
+  const totalDisplay = document.getElementById('total');
 
   // Authentication display logic
   const loginPrompt = document.getElementById('login-prompt-in-cart');
@@ -55,28 +58,43 @@ function renderCartItems() {
   // Note: 'logged-in-user-info' visibility is managed by loadUserProfile in app.js
 
   if (cart.length === 0) {
-    container.innerHTML = '<p>कार्ट खाली है</p>';
-    document.getElementById('total').textContent = '₹0';
+    container.innerHTML = `
+      <div style="text-align: center; padding: 3rem 1rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.2;">🛒</div>
+        <p style="font-size: 1.1rem; color: #666; margin-bottom: 1.5rem;">आपकी कार्ट अभी खाली है</p>
+        <button onclick="closeCart()" style="padding: 12px 24px; background: var(--amazon-yellow); border: 1px solid #a88734; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%;">खरीदारी जारी रखें</button>
+      </div>
+    `;
+    if (totalDisplay) totalDisplay.textContent = '₹0';
+    if (discountRow) discountRow.style.display = 'none';
     return;
   }
   
   container.innerHTML = cart.map(item => `
-    <div class="cart-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
-      <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" loading="lazy" 
-           style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee;">
+    <div class="cart-item" style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
+      <div onclick="window.showProductDetails('${item.id}'); window.closeCart();" style="cursor: pointer; flex-shrink: 0;">
+        <img src="${item.image || 'https://via.placeholder.com/80'}" alt="${item.name}" loading="lazy" 
+             style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: #f7f7f7; border: 1px solid #eee;">
+      </div>
       <div style="flex: 1;">
-        <div style="font-weight: 600; color: #333;">${item.name}</div>
-        <div style="color: #2e7d32; font-weight: bold;">₹${item.price}</div>
+        <div onclick="window.showProductDetails('${item.id}'); window.closeCart();" 
+             style="font-weight: 600; color: #007185; cursor: pointer; margin-bottom: 4px; line-height: 1.2; font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+          ${item.name}
+        </div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #0f1111; margin-bottom: 8px;">₹${item.price}</div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; align-items: center; background: #f0f2f2; border-radius: 8px; border: 1px solid #d5d9d9; padding: 2px;">
+            <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem;">-</button>
+            <span style="min-width: 25px; text-align: center; font-weight: bold;">${item.quantity}</span>
+            <button onclick="changeQuantity('${item.id}', 1)" style="width: 30px; height: 30px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem;">+</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-weight: bold; font-size: 0.9rem; color: #333;">₹${(item.price * item.quantity).toLocaleString()}</div>
+            <button onclick="removeFromCart('${item.id}')" style="background: none; border: none; color: #cc0c39; cursor: pointer; font-size: 0.8rem;">हटाएं</button>
+          </div>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f9f9f9; border-radius: 4px; cursor: pointer;">-</button>
-        <span style="min-width: 20px; text-align: center;">${item.quantity}</span>
-        <button onclick="changeQuantity('${item.id}', 1)" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
-      </div>
-      <div style="font-weight: bold; min-width: 80px; text-align: right;">
-        ₹${(item.price * item.quantity).toLocaleString()}
-      </div>
-      <button onclick="removeFromCart('${item.id}')" style="background: #f44336; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">हटाएं</button>
     </div>
   `).join('');
   
@@ -87,7 +105,7 @@ function renderCartItems() {
     discountRow.style.display = 'none';
   }
 
-  document.getElementById('total').textContent = `₹${total.toLocaleString()}`;
+  if (totalDisplay) totalDisplay.textContent = `₹${total.toLocaleString()}`;
 }
 
 function removeFromCart(id) {
