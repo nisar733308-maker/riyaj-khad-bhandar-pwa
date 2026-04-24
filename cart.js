@@ -231,17 +231,17 @@ window.payViaUPI = () => {
     return;
   }
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal - (subtotal * appliedDiscount);
-  if(total === 0) return;
+  const finalTotal = (subtotal - (subtotal * appliedDiscount)).toFixed(2);
+  if(parseFloat(finalTotal) <= 0) return;
 
-  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${total.toFixed(2)}&cu=INR`;
+  const upiUrl = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj%20Ahmad&tn=OrderPayment&am=${finalTotal}&cu=INR`;
 
   // Mobile check for deep linking
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (isMobile) {
     window.location.href = upiUrl;
   } else {
-    alert("💻 आप डेस्कटॉप पर हैं। कृपया 'QR कोड' बटन दबाएं और अपने मोबाइल से स्कैन करें।");
+    window.showToast("💻 आप डेस्कटॉप पर हैं। कृपया 'QR कोड' बटन दबाएं।");
     if (window.showPaymentQR) window.showPaymentQR();
   }
 };

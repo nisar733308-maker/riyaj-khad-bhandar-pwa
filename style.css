@@ -8,6 +8,7 @@
 }
 
 :root {
+  --primary-green: #007185;
   --amazon-navy: #131921;
   --amazon-light-navy: #232f3e;
   --amazon-yellow: #ffd814;
@@ -115,14 +116,14 @@ header p { color: var(--amazon-orange); font-size: 0.7rem; margin: 0; }
 }
 
 nav {
-  background: var(--secondary-navy);
-  padding: 8px 15px;
+  background: var(--amazon-light-navy);
+  padding: 5px 15px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
   z-index: 100;
-  overflow-x: auto;
-  scrollbar-width: none;
+  position: sticky;
+  top: 55px; /* Right below header */
 }
 
 .filter-group {
@@ -501,7 +502,7 @@ nav {
   margin-left: auto;
   margin-top: 0;
   height: 100vh;
-  max-height: 100vh;
+  max-height: 100% !important;
   width: 400px;
   max-width: 90%;
   border-radius: 0;
@@ -529,6 +530,8 @@ nav {
   padding: 20px;
   border-top: 1px solid #eee;
   background: white;
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
 .close {

@@ -118,13 +118,6 @@
         <span id="cart-count" style="position: absolute; top: -5px; right: -8px; background: var(--amazon-orange); color: #000; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold;">0</span>
     </div>
   </header>
-
-  <nav id="search-nav">
-    <div class="filter-group">
-      <input id="search" placeholder="उत्पाद खोजें (जैसे: यूरिया, डीएपी)...">
-      <button id="search-btn-icon">🔍</button>
-    </div>
-  </nav>
   <!-- 3-Dots Side Menu -->
   <div id="side-menu" class="side-menu" onclick="toggleMenu()">
     <div class="menu-content" onclick="event.stopPropagation()">
@@ -160,31 +153,20 @@
 
   <nav>
     <div class="filter-group">
-      <input id="search" placeholder="उत्पाद खोजें...">
+      <input id="search" placeholder="उत्पाद खोजें (जैसे: यूरिया, डीएपी)..." autocomplete="off">
+      <button id="search-btn-icon">🔍</button>
       <div id="search-history" class="search-history-dropdown"></div>
-      <!-- Store Info link removed - now in 3-dot menu -->
-      <select id="category-filter">
+      <select id="category-filter" style="display: none;"> <!-- Hidden on mobile for cleaner UI, can toggle in CSS -->
         <option value="all">📁 सभी श्रेणियां</option>
-        <option value="नाइट्रोजन खाद">नाइट्रोजन खाद</option>
-        <option value="फॉस्फेट खाद">फॉस्फेट खाद</option>
-        <option value="पोटाश खाद">पोटाश खाद</option>
-        <option value="उर्वरक">उर्वरक</option>
-        <option value="कीटनाशक">कीटनाशक</option>
       </select>
-      <select id="rating-filter">
+      <select id="rating-filter" style="display: none;">
         <option value="0">⭐ सभी रेटिंग</option>
-        <option value="5">⭐⭐⭐⭐⭐</option>
-        <option value="4">⭐⭐⭐⭐ & ऊपर</option>
-        <option value="3">⭐⭐⭐ & ऊपर</option>
       </select>
-      <select id="sort-filter">
+      <select id="sort-filter" style="display: none;">
         <option value="none">🔄 क्रम बदलें</option>
-        <option value="low-high">💰 कीमत: कम से ज्यादा</option>
-        <option value="high-low">💰 कीमत: ज्यादा से कम</option>
       </select>
-      <button id="clear-filters-btn">❌ साफ करें</button>
+      <button id="clear-filters-btn" style="border-radius: 0 4px 4px 0;">❌</button>
     </div>
-    <span id="cart-count" onclick="openCart()" style="cursor:pointer;">🛒 0</span>
   </nav>
 
   <!-- Featured Slider -->
