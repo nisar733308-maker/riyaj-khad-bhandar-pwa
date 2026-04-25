@@ -108,14 +108,18 @@
 <body>
   <div id="toast-container" class="toast-container"></div>
   <header>
-    <div id="menu-btn" onclick="toggleMenu()" style="font-size: 1.5rem; cursor: pointer; color: #fff;">☰</div>
-    <div style="flex: 1; display: flex; flex-direction: column;">
+    <div id="menu-btn" onclick="window.toggleMenu()" class="header-icon">☰</div>
+    <div class="brand-container">
         <h1 id="shop-title">रियाज अहमद खाद भंडार</h1>
-        <p id="shop-desc">महाराजगंज • किसान सेवा</p>
+        <p id="shop-desc">Mihirganj • Trusted Since 2004</p>
     </div>
-    <div id="cart-count-wrapper" onclick="openCart()" style="cursor:pointer; position: relative;">
-        <span style="font-size: 1.8rem; color: #fff;">🛒</span>
-        <span id="cart-count" style="position: absolute; top: -2px; right: -5px; background: var(--amazon-orange); color: #000; border-radius: 50%; min-width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 2px;">0</span>
+    <div class="nav-right">
+      <div id="cart-count-wrapper" onclick="openCart()" class="cart-wrapper">
+          <div style="position: relative;">
+            <span class="cart-icon">🛒</span>
+            <span id="cart-count" class="cart-badge">0</span>
+          </div>
+      </div>
     </div>
   </header>
   <!-- 3-Dots Side Menu -->
@@ -153,10 +157,10 @@
 
   <nav>
     <div class="filter-group">
-      <input id="search" placeholder="उत्पाद खोजें (जैसे: यूरिया, डीएपी)..." autocomplete="off">
+      <input id="search" placeholder="Search Riyaj Khad Store..." autocomplete="off">
       <button id="search-btn-icon">🔍</button>
       <div id="search-history" class="search-history-dropdown"></div>
-      <select id="category-filter" style="display: none;"> <!-- Hidden on mobile for cleaner UI, can toggle in CSS -->
+      <select id="category-filter" class="nav-select"> 
         <option value="all">📁 सभी श्रेणियां</option>
       </select>
       <select id="rating-filter" style="display: none;">
@@ -305,7 +309,15 @@
         <h2>👤 मेरी प्रोफाइल</h2>
         <span class="close" onclick="window.closeProfileModal()">&times;</span>
       </div>
-      <div class="modal-body profile-container">
+      <div class="modal-body profile-modern">
+        <div class="profile-user-card">
+          <div class="user-avatar">👤</div>
+          <div class="user-meta">
+            <h3 id="profile-display-name">किसान भाई</h3>
+            <p id="profile-display-email">customer@riyajkhad.com</p>
+          </div>
+        </div>
+
         <div class="profile-section-card">
           <h4>📝 व्यक्तिगत विवरण</h4>
           <input type="text" id="prof-input-name" placeholder="आपका पूरा नाम">

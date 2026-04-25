@@ -225,19 +225,26 @@ function renderProducts(productsList) {
 
     container.innerHTML = productsList.map(p => {
         const discount = p.mrp ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
+        const rating = p.reviews && p.reviews.length > 0 ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1) : "4.2";
+        const stars = "★".repeat(Math.floor(rating)) + "☆".repeat(5 - Math.floor(rating));
+        
         return `
         <div class="product-card" onclick="showProductDetails('${p.id}')">
-            ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+            ${discount > 0 ? `<span class="discount-badge">${discount}% OFF</span>` : ''}
             <div class="image-container">
                 <img src="${p.image}" alt="${p.name}" loading="lazy">
             </div>
-            <div class="p-info" style="padding: 10px 0;">
-                <h3 style="font-size: 1rem; color: #007185; margin: 0; line-height: 1.3; height: 2.6em; overflow: hidden;">${p.name}</h3>
-                <div style="margin: 5px 0;">
-                    <span style="font-size: 1.4rem; font-weight: bold;">₹${p.price}</span>
-                    ${p.mrp ? `<span style="text-decoration: line-through; color: #565959; font-size: 0.8rem; margin-left: 5px;">M.R.P: ₹${p.mrp}</span>` : ''}
+            <div class="p-info">
+                <h3 style="font-size: 0.95rem; color: #007185; margin: 0; line-height: 1.2; height: 2.4em; overflow: hidden; font-weight: 500;">${p.name}</h3>
+                <div class="card-rating">
+                    <span style="color: #ffa41c;">${stars}</span>
+                    <span style="color: #565959; font-size: 0.75rem;">(${p.reviews ? p.reviews.length : 12})</span>
                 </div>
-                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="margin: 4px 0;">
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #0f1111;">₹${p.price.toLocaleString()}</span>
+                    ${p.mrp ? `<span style="text-decoration: line-through; color: #565959; font-size: 0.75rem; margin-left: 5px;">₹${p.mrp.toLocaleString()}</span>` : ''}
+                </div>
+                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                     <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart('${p.id}')" ${p.stockCount <= 0 ? 'disabled' : ''}>
                         ${p.stockCount <= 0 ? 'Out of Stock' : 'Add to Cart'}
                     </button>

@@ -1,31 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Inter:wght@400;600&display=swap');
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
 }
 
 :root {
-  --primary-green: #2e7d32;
+  --primary-green: #232f3e;
   --amazon-navy: #131921;
   --amazon-light-navy: #232f3e;
   --amazon-yellow: #ffd814;
-  --amazon-orange: #f7ca00;
+  --amazon-orange: #febd69;
   --amazon-bg: #eaeded;
   --text-main: #0f1111;
   --text-light: #565959;
-  --success-green: #2e7d32;
+  --link-color: #007185;
   --error-red: #cc0c39;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  --hover-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  --hover-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 body {
   background-color: var(--amazon-bg);
   color: var(--text-main);
-  line-height: 1.6;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
 
 header {
@@ -37,25 +38,33 @@ header {
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s ease;
+  height: 60px;
 }
 
-header h1 { color: #fff; font-size: 1rem; margin: 0; font-weight: 700; }
-header p { color: var(--amazon-orange); font-size: 0.65rem; margin: 0; }
+.brand-container { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.brand-container h1 { color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+.brand-container p { color: var(--amazon-orange); font-size: 0.65rem; margin: 0; font-weight: 600; text-transform: uppercase; }
 
-#cart-count-wrapper {
+.header-icon { font-size: 1.4rem; color: #fff; cursor: pointer; padding: 8px; transition: opacity 0.2s; }
+.header-icon:active { opacity: 0.6; }
+
+.cart-wrapper { position: relative; cursor: pointer; padding: 4px; display: flex; align-items: center; }
+.cart-icon { font-size: 1.6rem; color: #fff; }
+.cart-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--amazon-orange);
+    color: #000;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
-}
-
-.side-menu {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 2000;
+    justify-content: center;
+    border: 2px solid var(--amazon-navy);
 }
 
 .menu-content {
@@ -121,13 +130,13 @@ header p { color: var(--amazon-orange); font-size: 0.65rem; margin: 0; }
 
 nav {
   background: var(--amazon-light-navy);
-  padding: 8px 15px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   gap: 10px;
   z-index: 100;
   position: sticky;
-  top: 55px; /* Right below header */
+  top: 60px; /* Aligned with header height */
 }
 
 .filter-group {
@@ -184,11 +193,12 @@ nav {
 
 #search {
   flex: 3;
-  padding: 11px 15px;
+  padding: 10px 15px;
   border: none;
   outline: none;
   font-size: 0.95rem;
   color: #111;
+  border-radius: 4px 0 0 4px;
 }
 
 #category-filter, #sort-filter, #rating-filter {
@@ -305,9 +315,9 @@ nav {
 
 #products-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 12px;
+  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 col */
+  gap: 10px;
+  padding: 10px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -315,7 +325,8 @@ nav {
 @media (min-width: 768px) {
     #products-container {
         grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
+        gap: 16px;
+        padding: 16px;
     }
 }
 
@@ -330,10 +341,10 @@ nav {
   background: #fff;
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e7e7e7;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s;
   position: relative;
   padding: 12px;
   cursor: pointer;
@@ -344,19 +355,34 @@ nav {
 }
 
 .product-card .image-container {
-    height: 160px;
+    height: 150px;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+}
+
+@media (min-width: 1024px) {
+    .product-card .image-container {
+        height: 200px;
+    }
 }
 
 .product-card img {
-    width: auto;
+    max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    transition: 0.3s;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: high-quality;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
 }
 
 .card-buttons {
@@ -366,7 +392,7 @@ nav {
 }
 
 .add-to-cart-btn {
-  background: #ffd814;
+  background: var(--amazon-yellow);
   border: 1px solid #a88734;
   color: #111;
   padding: 10px;
@@ -376,7 +402,7 @@ nav {
   font-weight: 500;
   transition: background 0.2s;
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .add-to-cart-btn:hover { background: #f7df66; }
@@ -403,15 +429,73 @@ nav {
     top: 0;
     left: 0;
     z-index: 5;
+    border-radius: 0 0 4px 0;
 }
-
-.call-btn { background: #1976d2; }
-.pay-btn { background: #ff9800; }
 
 .card-rating {
   color: #de7921;
   font-size: 0.8rem;
   margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Profile Modern UI */
+.profile-modern {
+    padding: 15px;
+}
+
+.profile-user-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    background: #f0f2f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #565959;
+}
+
+.user-meta h3 { font-size: 1.1rem; margin: 0; color: var(--text-main); }
+.user-meta p { font-size: 0.85rem; color: var(--text-light); margin: 0; }
+
+.profile-section-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+}
+
+.profile-section-card h4 {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
+}
+
+.profile-section-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
 }
 
 .best-seller-badge {

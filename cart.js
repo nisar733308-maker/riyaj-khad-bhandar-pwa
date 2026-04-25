@@ -71,28 +71,25 @@ function renderCartItems() {
   }
   
   container.innerHTML = cart.map(item => `
-    <div class="cart-item" style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee;">
+    <div class="cart-item" style="display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid #f0f0f0;">
       <div onclick="window.showProductDetails('${item.id}'); window.closeCart();" style="cursor: pointer; flex-shrink: 0;">
         <img src="${item.image || 'https://via.placeholder.com/80'}" alt="${item.name}" loading="lazy" 
-             style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: #f7f7f7; border: 1px solid #eee;">
+             style="width: 90px; height: 90px; object-fit: contain; border-radius: 4px; background: #fff; border: 1px solid #e7e7e7;">
       </div>
       <div style="flex: 1;">
         <div onclick="window.showProductDetails('${item.id}'); window.closeCart();" 
-             style="font-weight: 600; color: #007185; cursor: pointer; margin-bottom: 4px; line-height: 1.2; font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+             style="font-weight: 500; color: #007185; cursor: pointer; margin-bottom: 4px; line-height: 1.3; font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
           ${item.name}
         </div>
-        <div style="font-size: 1.1rem; font-weight: bold; color: #0f1111; margin-bottom: 8px;">₹${item.price}</div>
+        <div style="font-size: 1.05rem; font-weight: 700; color: #0f1111; margin-bottom: 12px;">₹${item.price.toLocaleString()}</div>
         
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-          <div style="display: flex; align-items: center; background: #f0f2f2; border-radius: 8px; border: 1px solid #d5d9d9; padding: 2px;">
-            <button onclick="changeQuantity('${item.id}', -1)" style="width: 30px; height: 30px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem;">-</button>
-            <span style="min-width: 25px; text-align: center; font-weight: bold;">${item.quantity}</span>
-            <button onclick="changeQuantity('${item.id}', 1)" style="width: 30px; height: 30px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem;">+</button>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; background: #f0f2f2; border-radius: 8px; border: 1px solid #d5d9d9; padding: 0;">
+            <button onclick="changeQuantity('${item.id}', -1)" style="width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; font-size: 1.1rem;">-</button>
+            <span style="min-width: 30px; text-align: center; font-weight: 600; font-size: 0.9rem;">${item.quantity}</span>
+            <button onclick="changeQuantity('${item.id}', 1)" style="width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; font-size: 1.1rem;">+</button>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-weight: bold; font-size: 0.9rem; color: #333;">₹${(item.price * item.quantity).toLocaleString()}</div>
-            <button onclick="removeFromCart('${item.id}')" style="background: none; border: none; color: #cc0c39; cursor: pointer; font-size: 0.8rem;">हटाएं</button>
-          </div>
+          <button onclick="removeFromCart('${item.id}')" style="background: none; border: none; color: #007185; cursor: pointer; font-size: 0.8rem; font-weight: 500;">Delete</button>
         </div>
       </div>
     </div>
