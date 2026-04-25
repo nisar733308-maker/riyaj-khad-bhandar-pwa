@@ -37,7 +37,7 @@ function addToCart(productId, quantity = 1) {
 
 function updateCartCount() {
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  document.getElementById('cart-count').textContent = `🛒 ${count}`;
+  document.getElementById('cart-count').textContent = count;
 }
 
 function renderCartItems() {
