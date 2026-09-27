@@ -99,8 +99,11 @@ header {
 
 /* ---------- Filters ---------- */
 .filter-group {
-  display: flex; gap: 8px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px;
 }
+.filter-group #search { flex: 1 1 calc(100% - 58px); }
+.filter-group .search-history-dropdown { flex: 1 1 100%; margin-top: 0; }
+#category-filter, #sort-filter { flex: 1 1 40%; }
 .filter-group::-webkit-scrollbar { display: none; }
 #category-filter, #sort-filter, #rating-filter {
   flex: 1; min-width: 110px; padding: 10px 12px;
