@@ -626,3 +626,26 @@ window.showToast = (message) => {
         toast.remove();
     }, 2500);
 };
+// --- PWA Install prompt ---
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const mi = document.getElementById('menu-install');
+  if (mi) mi.style.display = '';
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const mi = document.getElementById('menu-install');
+  if (mi) mi.style.display = 'none';
+  if (typeof window.showToast === 'function') window.showToast('✅ ऐप इंस्टॉल हो गया!');
+});
+window.installApp = async () => {
+  if (!deferredInstallPrompt) { if (typeof toggleMenu === 'function') toggleMenu(); return; }
+  deferredInstallPrompt.prompt();
+  try { await deferredInstallPrompt.userChoice; } catch(e) {}
+  deferredInstallPrompt = null;
+  const mi = document.getElementById('menu-install');
+  if (mi) mi.style.display = 'none';
+  if (typeof toggleMenu === 'function') toggleMenu();
+};

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'khad-v72-redesign';
+const CACHE_NAME = 'khad-v73-icons';
 const STATIC_CACHE = [
   './',
   './index.html',
@@ -6,7 +6,11 @@ const STATIC_CACHE = [
   './app.js',
   './products.js',
   './cart.js',
-  './manifest.json'
+  './manifest.json',
+  './new-icon-192.png',
+  './new-icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', e => e.waitUntil(
