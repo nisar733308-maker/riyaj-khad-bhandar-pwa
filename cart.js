@@ -1,6 +1,6 @@
 // Cart logic with localStorage
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let appliedDiscount = 0; // 0.10 means 10%
+let appliedDiscount = parseFloat(localStorage.getItem('appliedDiscount')) || 0; // 0.10 means 10% (localStorage me save hota hai taaki payment page pe bhi mile)
 
 function addToCart(productId, quantity = 1) {
   // currentProducts (Firebase वाला डेटा) से सामान ढूंढें
@@ -147,6 +147,7 @@ window.applyCoupon = () => {
     alert('❌ अमान्य कूपन कोड');
     appliedDiscount = 0;
   }
+  localStorage.setItem('appliedDiscount', String(appliedDiscount));
   renderCartItems();
 };
 
@@ -232,6 +233,7 @@ async function handleCheckout() {
   cart = [];
   localStorage.removeItem('cart');
   appliedDiscount = 0; // कूपन रिसेट करें
+  localStorage.setItem('appliedDiscount', '0');
   document.getElementById('screenshot-base64').value = '';
   document.getElementById('payment-screenshot').value = '';
   document.getElementById('qr-payment-container').style.display = 'none';

@@ -43,30 +43,44 @@
     <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">भुगतान के बाद व्हाट्सएप पर सूचना भेजी जाएगी।</p>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="./firebaseConfig.js"></script>
   <script src="./cart.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const cartData = JSON.parse(localStorage.getItem('cart')) || [];
-      const subtotal = cartData.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      // Note: appliedDiscount usually needs global state, here we assume it's calculated or stored.
-      const total = subtotal; // Simplified for this view
-      
-      document.getElementById('pay-total').textContent = `₹${total.toLocaleString()}`;
+    let payCart = [];
+    let payDiscount = 0;
+    let payTotal = 0;
+    let currentAuthUser = null;
 
-      const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj Ahmad&tn=OrderPayment&am=${total}&cu=INR`;
+    document.addEventListener('DOMContentLoaded', () => {
+      payCart = JSON.parse(localStorage.getItem('cart')) || [];
+      payDiscount = parseFloat(localStorage.getItem('appliedDiscount')) || 0;
+      const subtotal = payCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      payTotal = subtotal - (subtotal * payDiscount);
+
+      document.getElementById('pay-total').textContent = `₹${payTotal.toLocaleString()}`;
+
+      const upiUri = `upi://pay?pa=9936733308-3@ybl&pn=Riyaj Ahmad&tn=OrderPayment&am=${payTotal.toFixed(2)}&cu=INR`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
-      
+
       document.getElementById('qr-target').innerHTML = `<img src="${qrUrl}" alt="QR Code">`;
       document.getElementById('upi-deep-link').href = upiUri;
+
+      // लॉगिन स्थिति ट्रैक करें
+      if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(u => { currentAuthUser = u; });
+      }
 
       // Handle Screenshot
       document.getElementById('screenshot-input').onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = (event) => {
-             // Re-using a simplified version of compression
-             document.getElementById('screenshot-base64').value = event.target.result;
+          reader.onload = async (event) => {
+             const compressed = await compressPaymentImage(event.target.result);
+             document.getElementById('screenshot-base64').value = compressed;
              alert("✅ स्क्रीनशॉट लोड हो गया!");
           };
           reader.readAsDataURL(file);
@@ -74,21 +88,104 @@
       };
     });
 
-    function confirmPaymentOrder() {
+    async function confirmPaymentOrder() {
       const ss = document.getElementById('screenshot-base64').value;
       if(!ss) {
         if(!confirm("क्या आपने बिना स्क्रीनशॉट के पेमेंट कर दिया है? स्क्रीनशॉट अपलोड करना बेहतर है।")) return;
       }
-      
-      // Save screenshot to local temp so handleCheckout can pick it up
-      localStorage.setItem('temp_screenshot', ss);
-      
-      // Since handleCheckout is in cart.js, and we are on a new page, 
-      // we need to trigger the WhatsApp logic.
-      // For simplicity, we redirect back with a flag or just alert.
-      alert("✅ धन्यवाद! अब आपको व्हाट्सएप पर भेजा जा रहा है।");
-      // In a real app, you'd trigger handleCheckout here.
-      window.location.href = 'index.html?action=complete';
+
+      if (payCart.length === 0) {
+        alert("❌ आपकी कार्ट खाली है। कृपया वापस जाकर सामान जोड़ें।");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (!currentAuthUser) {
+        alert("❌ ऑर्डर करने के लिए पहले लॉगिन करना अनिवार्य है। स्टोर पेज पर लॉगिन करके वापस आएं।");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (!window.db) {
+        alert("❌ डेटाबेस से संपर्क नहीं हो पाया। कृपया इंटरनेट चेक करके दोबारा कोशिश करें।");
+        return;
+      }
+
+      // प्रोफाइल से डेटा लें
+      const snapshot = await window.db.ref('users/' + currentAuthUser.uid).once('value');
+      const userData = snapshot.val();
+
+      if (!userData || !userData.name || !userData.phone) {
+        alert("❌ आपका प्रोफाइल अधूरा है। कृपया स्टोर पेज पर 'मेरी प्रोफाइल' में नाम और मोबाइल नंबर भरें।");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      let customerAddress = "";
+      if (userData.addresses && userData.addresses.length > 0) {
+        customerAddress = userData.addresses[userData.addresses.length - 1];
+      } else if (userData.address) {
+        customerAddress = userData.address;
+      }
+
+      if (!customerAddress) {
+        alert("❌ कृपया स्टोर पेज पर 'मेरी प्रोफाइल' में कम से कम एक पता जोड़ें।");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const customerName = userData.name;
+      const customerPhone = userData.phone;
+      const customerAadhar = userData.aadhar || "N/A";
+      const subtotal = payCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const phone = "919936733308"; // रियाज अहमद जी का व्हाट्सएप नंबर
+
+      let text = `*नया ऑर्डर - रियाज अहमद खाद भंडार (UPI पेमेंट)*\n\n`;
+      text += `*नाम:* ${customerName}\n`;
+      text += `*मोबाइल:* ${customerPhone}\n`;
+      text += `*पता:* ${customerAddress}\n`;
+      text += `*आधार:* ${customerAadhar}\n\n`;
+
+      payCart.forEach(item => {
+        text += `• ${item.name} (x${item.quantity}) - ₹${(item.price * item.quantity).toLocaleString()}\n`;
+      });
+      if (payDiscount > 0) {
+        text += `\n*छूट (10%):* -₹${(subtotal * payDiscount).toLocaleString()}\n`;
+      }
+      text += `\n*कुल राशि: ₹${payTotal.toLocaleString()}*`;
+      if (ss) text += `\n\n📸 _पेमेंट स्क्रीनशॉट पोर्टल पर अपलोड कर दिया गया है_`;
+
+      // ऑनलाइन ऑर्डर हिस्ट्री (Firebase) में सेव करें
+      const orderId = Date.now();
+      try {
+        await window.db.ref('orders/' + orderId).set({
+          id: orderId,
+          date: new Date().toLocaleString('hi-IN'),
+          userId: currentAuthUser.uid,
+          name: String(customerName).trim(),
+          phone: String(customerPhone).trim(),
+          address: String(customerAddress).trim(),
+          aadhar: String(customerAadhar).trim(),
+          items: payCart.map(i => ({ name: i.name, qty: i.quantity, price: i.price })),
+          total: payTotal,
+          paymentScreenshot: ss || null,
+          paymentMethod: 'UPI',
+          status: 'New'
+        });
+      } catch (e) {
+        alert("❌ ऑर्डर सेव नहीं हो पाया: " + e.message + "\nकृपया दोबारा कोशिश करें।");
+        return;
+      }
+
+      // ऑर्डर सेव होने के बाद ही कार्ट खाली करें
+      localStorage.removeItem('cart');
+      localStorage.setItem('appliedDiscount', '0');
+
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank');
+
+      alert("✅ धन्यवाद! आपका ऑर्डर दर्ज हो गया है।");
+      window.location.href = 'index.html';
     }
   </script>
 </body>

@@ -555,12 +555,6 @@ window.openAboutModal = () => {
     if (modal) modal.style.display = 'block';
 };
 
-// 🔥 Full About Us Modal Functions
-window.openAboutModal = () => {
-    const modal = document.getElementById('about-modal');
-    if (modal) modal.style.display = 'block';
-};
-
 window.closeAboutModal = () => {
     const modal = document.getElementById('about-modal');
     if (modal) modal.style.display = 'none';
