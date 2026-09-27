@@ -349,3 +349,6 @@ body.dark-mode { --bg: #0a1410; --card: #122019; --ink: #e8f5ee; --ink-soft: #9d
 body.dark-mode .product-card, body.dark-mode .feature-item, body.dark-mode .modal-content { border-color: var(--line); }
 body.dark-mode .modal input, body.dark-mode .modal select { background: #0d1a13; color: var(--ink); }
 body.dark-mode .menu-list li { color: var(--ink); border-color: #16261d; }
+
+/* v2.2 polish */
+.search-history-dropdown:empty { display: none; }
